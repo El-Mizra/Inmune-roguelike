@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#12060c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <title>Inmune</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: #12060c;
+        overflow: hidden;
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+      }
+      #game {
+        position: fixed;
+        inset: 0;
+      }
+      canvas {
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+      #rotate {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        background: #12060c;
+        color: #f4d8e0;
+        font-family: 'VT323', monospace;
+        font-size: 28px;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        box-sizing: border-box;
+      }
+      @media (orientation: portrait) and (pointer: coarse) {
+        #rotate { display: flex; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game"></div>
+    <div id="rotate">
+      <div>↻<br />Gira tu dispositivo<br />Rotate your device</div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
