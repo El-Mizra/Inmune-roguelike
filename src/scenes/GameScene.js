@@ -440,6 +440,27 @@ export class GameScene extends Phaser.Scene {
     return { x: (room.cx + 0.5) * TILE, y: (room.cy + 0.5) * TILE };
   }
 
+  unstick(e) {
+    const tx = Math.floor(e.x / TILE);
+    const ty = Math.floor(e.y / TILE);
+    const r = e.room;
+    const inside = tx > r.x && tx < r.x + r.w - 1 && ty > r.y && ty < r.y + r.h - 1;
+    if (inside && this.floor.isFloor(tx, ty)) return;
+    // busca el tile de suelo libre más cercano dentro de la sala
+    for (let rad = 0; rad < 6; rad++) {
+      for (let oy = -rad; oy <= rad; oy++) {
+        for (let ox = -rad; ox <= rad; ox++) {
+          const x = Phaser.Math.Clamp(tx + ox, r.x + 1, r.x + r.w - 2);
+          const y = Phaser.Math.Clamp(ty + oy, r.y + 1, r.y + r.h - 2);
+          if (this.floor.isFloor(x, y)) {
+            e.body.reset((x + 0.5) * TILE, (y + 0.5) * TILE);
+            return;
+          }
+        }
+      }
+    }
+  }
+
   clampToRoom(room, x, y) {
     const minX = (room.x + 2) * TILE;
     const maxX = (room.x + room.w - 2) * TILE;

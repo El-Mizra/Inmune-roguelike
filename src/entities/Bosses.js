@@ -150,12 +150,12 @@ export class MelanomaBoss extends Enemy {
       this.vessels.lineStyle(1, 0xd04050, 0.9);
       this.vessels.lineBetween(n.x, n.y, this.x, this.y);
     }
-    if (this.nodes.length) this.hp = Math.min(this.maxHp, this.hp + (this.nodes.length * 2 * dt) / 1000);
+    if (this.nodes.length) this.hp = Math.min(this.maxHp, this.hp + (this.nodes.length * 1.2 * dt) / 1000);
 
     // evasión inmune: baja MHC-I → difícil de detectar
     if (this.gt >= this.nextStealth && !this.stealth) {
       this.stealth = true;
-      this.stealthUntil = this.gt + 4000;
+      this.stealthUntil = this.gt + 3500;
       this.dmgTakenMult = 0.5;
       this.setAlpha(0.35);
       this.scene.floatText(this.x, this.y - 34, t('camouflage'), '#c9a0ff');
@@ -164,7 +164,7 @@ export class MelanomaBoss extends Enemy {
       this.stealth = false;
       this.dmgTakenMult = 1;
       this.setAlpha(1);
-      this.nextStealth = this.gt + (this.enraged ? 8000 : 11000);
+      this.nextStealth = this.gt + (this.enraged ? 10000 : 13000);
     }
 
     // espiral de disparos
@@ -179,7 +179,7 @@ export class MelanomaBoss extends Enemy {
     }
 
     if (this.gt >= this.nextAttack) {
-      const kind = ['spiral', 'metastasis', 'aimed', 'spiral'][this.pattern++ % 4];
+      const kind = ['spiral', 'aimed', 'metastasis', 'spiral', 'aimed'][this.pattern++ % 5];
       this.nextAttack = this.gt + (this.enraged ? 2200 : 2900);
       if (kind === 'spiral') {
         this.spiral = { a: Math.random() * 6, next: this.gt, until: this.gt + 2000 };

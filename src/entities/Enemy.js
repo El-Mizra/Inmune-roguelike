@@ -79,6 +79,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   tick(dt) {
     const fn = this[`ai_${this.id}`];
     if (fn) fn.call(this, dt);
+    // red de seguridad: si acaba dentro de un muro, sácalo al suelo más cercano
+    if (this.active && this.gt >= (this.nextStuckCheck || 0)) {
+      this.nextStuckCheck = this.gt + 400;
+      this.scene.unstick(this);
+    }
   }
 
   takeDamage(amount, source = 'shot') {

@@ -219,7 +219,7 @@ export const ENEMIES = {
     category: 'cancer',
     tags: ['cancer'],
     texture: 'tumornode',
-    hp: 14,
+    hp: 12,
     speed: 0,
     contactDamage: 1,
     cost: 0,
