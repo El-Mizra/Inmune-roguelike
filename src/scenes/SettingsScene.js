@@ -60,7 +60,21 @@ export class SettingsScene extends Phaser.Scene {
       wordWrap: { width: pw - 48 },
     });
 
-    button(this, W / 2, py + ph - 36, 220, 42, t('back'), () => this.close(), { size: 11 });
+    const fromMenu = this.from === 'Menu';
+    button(this, fromMenu ? W / 2 - 120 : W / 2, py + ph - 36, 220, 42, t('back'), () => this.close(), { size: 11 });
+    if (fromMenu) {
+      // doble toque para confirmar: evita borrar el progreso por accidente
+      let armed = false;
+      const rb = button(this, W / 2 + 120, py + ph - 36, 220, 42, t('resetProgress'), () => {
+        if (!armed) {
+          armed = true;
+          rb.setLabel(t('resetConfirm'));
+          return;
+        }
+        Save.resetProgress();
+        this.scene.restart({ from: this.from });
+      }, { size: 9, color: COLORS.red });
+    }
   }
 
   close() {

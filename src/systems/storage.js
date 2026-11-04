@@ -82,6 +82,13 @@ export const Save = {
     }
     save();
   },
+  // Borra enciclopedia, memoria, partidas y desbloqueos; conserva los ajustes.
+  resetProgress() {
+    const settings = data.settings;
+    data = defaults();
+    data.settings = settings;
+    save();
+  },
   endRun(won) {
     data.runs += 1;
     if (won) data.wins += 1;
