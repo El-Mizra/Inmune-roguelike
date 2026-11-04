@@ -59,9 +59,12 @@ function drawNK(p, f = 0) {
   p.outline(PAL.outline);
 }
 
-function drawTcell(p) {
-  p.blob(7, 7, 5.6, ['#6aa087', '#93c7ad', '#bfe5d0', '#e6fff2']);
-  p.blob(7, 7, 4.2, ['#24314f', '#34477a', '#4b62a3']);
+function drawTcell(p, f = 0) {
+  // linfocito pequeño: casi todo núcleo, con microvellosidades (receptores TCR) en la superficie
+  p.blob(7, 7, 5.6, ['#6aa087', '#93c7ad', '#bfe5d0', '#e6fff2'], wob(f * 1.9, 0.05, 6));
+  p.blob(7, 7.3, 4.2, ['#24314f', '#34477a', '#4b62a3']);
+  const tcr = f === 0 ? [[7, 0], [13, 6], [1, 9], [11, 12]] : [[8, 0], [13, 8], [1, 6], [10, 13]];
+  for (const [x, y] of tcr) p.set(x, y, '#e6fff2');
   p.outline(PAL.outline);
 }
 
@@ -437,7 +440,7 @@ export function generateTextures(scene) {
   makeTexture(scene, 'neutrophil', 16, 16, 2, drawNeutrophil);
   makeTexture(scene, 'macrophage', 20, 20, 2, drawMacrophage);
   makeTexture(scene, 'nkcell', 16, 16, 2, drawNK);
-  makeTexture(scene, 'tcell', 14, 14, 1, drawTcell);
+  makeTexture(scene, 'tcell', 14, 14, 2, drawTcell);
   makeTexture(scene, 'bcell', 14, 14, 1, drawBcell);
 
   makeTexture(scene, 'saureus', 13, 12, 2, drawSaureus);
@@ -454,6 +457,7 @@ export function generateTextures(scene) {
   makeTexture(scene, 'tumornode', 14, 14, 2, drawTumorNode);
 
   makeTexture(scene, 'granule', 6, 6, 1, orb(['#b04a86', '#e58cc0', '#ffd0ea', '#ffffff'], 2.2));
+  makeTexture(scene, 'granzyme', 6, 6, 1, orb(['#1f5a44', '#3a9a74', '#8ee0b0', '#e6fff2'], 2.2));
   makeTexture(scene, 'perforin', 6, 6, 1, orb(['#5a1a5c', '#a0368f', '#e070c0', '#ffe0f4'], 2.2));
   makeTexture(scene, 'toxin', 7, 7, 1, orb(['#7a1010', '#c42a2a', '#ff6a5a', '#ffd0c0'], 2.6, 7));
   makeTexture(scene, 'pyocyanin', 7, 7, 1, orb(['#124a5a', '#1f8aa0', '#5fd6e0', '#d0ffff'], 2.6, 7));
@@ -486,6 +490,7 @@ export function createAnimations(scene) {
   anim('neutrophil_idle', 'neutrophil', [0, 1], 3);
   anim('macrophage_idle', 'macrophage', [0, 1], 2);
   anim('nkcell_idle', 'nkcell', [0, 1], 3);
+  anim('tcell_idle', 'tcell', [0, 1], 3);
   anim('saureus_idle', 'saureus', [0, 1], 3);
   anim('paeruginosa_swim', 'paeruginosa', [0, 1], 8);
   anim('calbicans_idle', 'calbicans', [0, 1], 2);

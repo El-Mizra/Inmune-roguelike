@@ -185,13 +185,65 @@ export const CELLS = {
     },
   },
   tcd8: {
-    playable: false,
+    playable: true,
     texture: 'tcell',
+    podColor: 0x93c7ad,
     name: { es: 'Linfocito T CD8', en: 'CD8 T cell' },
     branch: 'adaptive',
+    // aprende durante la partida: +2% de daño por cada eliminado de esa especie (máx. +40%)
+    adaptive: true,
+    bonus: { infected: 1.5, virus: 0.5, cancer: 0.3 },
+    stats: {
+      maxHp: 6,
+      maxArmor: 3,
+      maxAtp: 100,
+      speed: 90,
+      damage: 3,
+      fireRate: 2.6,
+      bulletSpeed: 240,
+      spread: 0.03,
+      range: 170,
+    },
+    weapon: {
+      type: 'projectile',
+      texture: 'granzyme',
+      name: { es: 'Granzimas dirigidas', en: 'Targeted granzymes' },
+      desc: {
+        es: '+150% de daño a células infectadas, +50% a virus y +30% al cáncer. Aprende: cada eliminado de una especie aumenta tu daño contra ella.',
+        en: '+150% damage to infected cells, +50% to viruses and +30% to cancer. Learns: each kill of a species raises your damage against it.',
+      },
+    },
+    skill: {
+      id: 'clonal',
+      short: { es: 'Clones', en: 'Clones' },
+      cost: 45,
+      cooldown: 14000,
+      duration: 9000,
+      radius: 0,
+      clones: 2,
+      name: { es: 'Expansión clonal', en: 'Clonal expansion' },
+      desc: {
+        es: 'Te divides: aparecen 2 clones idénticos que cazan enemigos por su cuenta durante 9 s.',
+        en: 'You divide: 2 identical clones appear and hunt enemies on their own for 9 s.',
+      },
+    },
     summary: {
-      es: 'Asesino de precisión de células infectadas.',
-      en: 'Precision killer of infected cells.',
+      es: 'Asesino de precisión de la inmunidad adaptativa: aprende y se multiplica.',
+      en: 'Precision killer of adaptive immunity: it learns and multiplies.',
+    },
+    facts: {
+      es: [
+        'Cada linfocito T tiene un receptor (TCR) único que reconoce un solo fragmento de antígeno, presentado en las moléculas MHC-I.',
+        'Al reconocer su antígeno se activa y se divide sin parar (expansión clonal): de una célula pueden salir miles de clones en pocos días.',
+        'Mata a las células infectadas con perforina, granzimas y el ligando Fas, induciendo su apoptosis.',
+        'Tras la infección, algunos clones sobreviven como células de memoria: por eso las vacunas funcionan.',
+      ],
+      en: [
+        'Each T cell has a unique receptor (TCR) that recognizes a single antigen fragment, presented on MHC-I molecules.',
+        'When it recognizes its antigen it activates and divides nonstop (clonal expansion): one cell can yield thousands of clones within days.',
+        'It kills infected cells with perforin, granzymes and Fas ligand, triggering their apoptosis.',
+        'After the infection, some clones survive as memory cells: that is why vaccines work.',
+      ],
     },
   },
   bcell: {

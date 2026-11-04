@@ -64,10 +64,14 @@ Fin de la partida → resumen + memoria inmunológica ganada
 - **Pasiva, "falta de lo propio":** ve y daña con normalidad al melanoma aunque haya reducido su MHC-I.
 - **Rol:** rápida y frágil; especialista contra virus y cáncer.
 
+### Linfocito T CD8 (disponible)
+- **Ataque, granzimas dirigidas:** +150% de daño a células infectadas, +50% a virus y +30% al cáncer.
+- **Pasiva, aprendizaje adaptativo:** +2% de daño contra una especie por cada eliminado de esa especie durante la partida (máximo +40%).
+- **Habilidad, expansión clonal:** 2 clones aliados cazan durante 9 s.
+
 ### Próximamente
 | Célula | Estilo | Especialidad realista |
 |---|---|---|
-| Linfocito T CD8 | Golpes precisos de alto daño | Mata células infectadas por virus antes de que estallen |
 | Linfocito B / célula plasmática | Dispara anticuerpos | Marca (opsoniza) y neutraliza virus y toxinas |
 | Eosinófilo | Gránulos explosivos | Parásitos (zona intestino) |
 

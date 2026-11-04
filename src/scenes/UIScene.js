@@ -371,6 +371,16 @@ export class UIScene extends Phaser.Scene {
       g.arc(B.x, B.y, B.r - 4, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - frac), false);
       g.strokePath();
     }
+    if (p.cell.skill.id === 'clonal') {
+      // icono de expansión clonal: una célula dividiéndose en dos
+      g.lineStyle(2, 0x93c7ad, ready ? 0.95 : 0.4);
+      g.strokeCircle(B.x - 7, B.y, 7);
+      g.strokeCircle(B.x + 7, B.y, 7);
+      g.fillStyle(0x93c7ad, ready ? 0.9 : 0.3);
+      g.fillCircle(B.x - 7, B.y, 3);
+      g.fillCircle(B.x + 7, B.y, 3);
+      return;
+    }
     if (p.cell.skill.id === 'synapse') {
       // icono de embestida: flecha doble
       g.lineStyle(3, 0xc9a0ff, ready ? 0.95 : 0.4);

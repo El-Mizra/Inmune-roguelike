@@ -72,6 +72,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     let m = 1;
     for (const tag of def.tags) if (this.stats.bonus[tag]) m += this.stats.bonus[tag];
     m += memoryBonus(speciesId);
+    // inmunidad adaptativa: el linfocito T mejora contra lo que ya ha eliminado en esta partida
+    if (this.cell.adaptive) m += Math.min(0.4, (this.run.kills[speciesId] || 0) * 0.02);
     return m;
   }
 
@@ -136,7 +138,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (!this.skillReady(gt)) return false;
     this.atp -= this.stats.skillCost;
     this.skillReadyAt = gt + this.stats.skillCooldown;
-    if (this.cell.skill.id === 'synapse') {
+    if (this.cell.skill.id === 'clonal') {
+      this.scene.spawnClones(this.cell.skill.clones, this.stats.skillDuration);
+    } else if (this.cell.skill.id === 'synapse') {
       this.scene.startSynapse(this.aim.x, this.aim.y);
     } else if (this.cell.skill.id === 'm1') {
       this.buffUntil = gt + this.stats.skillDuration;

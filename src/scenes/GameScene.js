@@ -121,6 +121,7 @@ export class GameScene extends Phaser.Scene {
     this.aimG = this.add.graphics().setDepth(20);
     this.shadowG = this.add.graphics().setDepth(2);
     this.podG = this.add.graphics().setDepth(9);
+    this.allies = [];
     this.scatterDecor();
     // partículas ambientales: proteínas y citocinas flotando en el líquido intersticial
     this.ambient = this.add.particles(0, 0, 'pixel', {
@@ -179,6 +180,7 @@ export class GameScene extends Phaser.Scene {
     if (!p.dead) this.handleInput(dt);
     p.tick(this.gt, dt);
     this.updateSynapse();
+    this.updateAllies();
 
     for (const e of this.enemies.getChildren().slice()) if (e.active) e.tick(dt);
 
@@ -430,6 +432,60 @@ export class GameScene extends Phaser.Scene {
       e.takeDamage(dmg, 'synapse');
       this.burstFx(e.x, e.y, 0xc9a0ff, 6);
     }
+  }
+
+  // Linfocito T CD8: expansión clonal (aliados temporales)
+  spawnClones(n, duration) {
+    const p = this.player;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 + Math.random();
+      const c = this.physics.add.sprite(p.x + Math.cos(a) * 10, p.y + Math.sin(a) * 10, 'tcell', 0).setDepth(9);
+      c.play('tcell_idle');
+      c.setTint(0xd8ffe8);
+      c.body.setCircle(4, 3, 3);
+      c.until = this.gt + duration;
+      c.nextHit = 0;
+      c.setScale(0);
+      this.tweens.add({ targets: c, scale: 0.85, duration: 250, ease: 'Back.easeOut' });
+      this.physics.add.collider(c, this.layer);
+      this.physics.add.collider(c, this.doors);
+      this.allies.push(c);
+    }
+    this.floatText(p.x, p.y - 16, this.lang === 'es' ? 'Expansión clonal' : 'Clonal expansion', '#93c7ad');
+  }
+
+  updateAllies() {
+    if (!this.allies.length) return;
+    const p = this.player;
+    for (const c of this.allies) {
+      if (this.gt >= c.until || p.dead) {
+        c.done = true;
+        c.body.enable = false;
+        this.tweens.add({ targets: c, alpha: 0, scale: 0, duration: 250, onComplete: () => c.destroy() });
+        continue;
+      }
+      // busca el enemigo más cercano a él
+      let best = null;
+      let bd = 170;
+      for (const e of this.enemies.getChildren()) {
+        if (!e.active || e.dying || (this.activeRoom && e.room !== this.activeRoom)) continue;
+        const d = Phaser.Math.Distance.Between(c.x, c.y, e.x, e.y);
+        if (d < bd) {
+          bd = d;
+          best = e;
+        }
+      }
+      if (best) {
+        if (bd > best.radius + 5) this.physics.moveToObject(c, best, 105);
+        else c.setVelocity(0, 0);
+        if (bd <= best.radius + 7 && this.gt >= c.nextHit) {
+          c.nextHit = this.gt + 420;
+          best.takeDamage(2.5 * p.damageMultiplier(best.def, best.id), 'ally');
+        }
+      } else if (Phaser.Math.Distance.Between(c.x, c.y, p.x, p.y) > 22) this.physics.moveToObject(c, p, 100);
+      else c.setVelocity(0, 0);
+    }
+    this.allies = this.allies.filter((c) => !c.done);
   }
 
   // Macrófago: onda de TNF-α al activarse (M1)
@@ -970,6 +1026,7 @@ export class GameScene extends Phaser.Scene {
       const w = Math.max(6, e.radius * 2.2);
       g.fillEllipse(e.x, e.y + e.radius + 1, w, Math.max(3, w * 0.3));
     }
+    for (const c of this.allies) if (c.active) g.fillEllipse(c.x, c.y + 6, 10, 3);
   }
 
   burstFx(x, y, color, count = 10) {

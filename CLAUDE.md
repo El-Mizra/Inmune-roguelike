@@ -50,15 +50,16 @@ No hay tests automáticos. Para validar cambios, ejecuta `npm run build` y prueb
 
 ## Estado actual
 
-- **Células jugables:** neutrófilo (proyectiles + NET), macrófago (cuerpo a cuerpo + activación M1) y célula NK (perforina + sinapsis; detecta al melanoma camuflado).
+- **Células jugables:** neutrófilo (proyectiles + NET), macrófago (cuerpo a cuerpo + activación M1), célula NK (perforina + sinapsis; detecta al melanoma camuflado) y linfocito T CD8 (granzimas, aprende durante la partida y tiene expansión clonal con aliados).
 - **Zona 1, la piel:** 2 pisos.
   - **Patógenos:** S. aureus, S. pyogenes, P. aeruginosa, Candida y HSV-1.
   - **Jefes:** MRSA y melanoma.
 - **Sistemas:** 14 mejoras, enciclopedia y memoria inmunológica entre partidas.
+- **Arte:** sombras, decoración de la dermis (`decor`), partículas ambientales, viñeta, anillo de lisis y pseudópodo al moverse.
 
 ## Próximos pasos sugeridos
 
-1. Pasada de arte: animación de caminar, más variedad de tiles y efectos.
-2. Linfocito T CD8 y linfocito B (anticuerpos).
+1. Linfocito B / célula plasmática (anticuerpos que opsonizan y neutralizan).
+2. Más arte: sprites hechos a mano, música.
 3. Zona 2, el pulmón: *S. pneumoniae*, influenza y *Aspergillus*; como jefes, tuberculosis (granuloma) y cáncer de pulmón.
 4. Música, y empaquetado con Capacitor para Android.
