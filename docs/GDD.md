@@ -53,10 +53,14 @@ Fin de la partida → resumen + memoria inmunológica ganada
 - **Habilidad, NET (trampa extracelular de neutrófilo):** una red de ADN y enzimas que ralentiza y daña. Hace triple daño a las hifas, igual que en la realidad, donde las NETs sirven contra lo que es demasiado grande para fagocitar.
 - **Rol:** rápido y versátil, el "primer respondedor".
 
+### Macrófago (disponible)
+- **Ataque, pseudópodos (fagocitosis):** zarpazo cuerpo a cuerpo en arco. Engulle microbios pequeños, lo que da +3 ATP, y destruye proyectiles enemigos. Contra hifas hace la mitad de daño porque son demasiado grandes.
+- **Habilidad, activación M1 (IFN-γ):** una onda de TNF-α empuja y daña. Durante 6 s, +50% de daño y +40% de velocidad de ataque, y recupera 1 de membrana.
+- **Rol:** tanque lento con más integridad (7) y menos membrana (2).
+
 ### Próximamente
 | Célula | Estilo | Especialidad realista |
 |---|---|---|
-| Macrófago | Cuerpo a cuerpo: fagocita (engulle) enemigos pequeños y se cura | Presenta antígenos y potencia a otras células |
 | Célula NK | Asesina a distancia media | Detecta células **sin MHC-I**: ve al melanoma camuflado |
 | Linfocito T CD8 | Golpes precisos de alto daño | Mata células infectadas por virus antes de que estallen |
 | Linfocito B / célula plasmática | Dispara anticuerpos | Marca (opsoniza) y neutraliza virus y toxinas |

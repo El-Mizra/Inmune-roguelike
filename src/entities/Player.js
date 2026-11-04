@@ -36,9 +36,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.hp = Math.min(run.hp ?? this.stats.maxHp, this.stats.maxHp);
     this.armor = this.stats.maxArmor;
     this.atp = run.atp ?? this.stats.maxAtp;
-    this.body.setCircle(5, 3, 4);
+    const r = this.cell.bodyRadius || 5;
+    this.body.setCircle(r, this.width / 2 - r, this.height / 2 - r + 0.5);
     this.setDepth(10);
-    this.play('neutrophil_idle');
+    this.play(`${this.cell.texture}_idle`);
+    this.buffUntil = 0;
     this.nextFire = 0;
     this.skillReadyAt = 0;
     this.invulnUntil = 0;
@@ -80,6 +82,21 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
     this.addAtp((this.stats.atpRegen * dt) / 1000);
     this.setAlpha(gt < this.invulnUntil ? (Math.floor(gt / 80) % 2 ? 0.4 : 1) : 1);
+    const buffed = this.buffed(gt);
+    if (buffed !== this.wasBuffed) {
+      this.wasBuffed = buffed;
+      if (buffed) this.setTint(0xffb27a);
+      else this.clearTint();
+    }
+  }
+
+  buffed(gt) {
+    return gt < this.buffUntil;
+  }
+
+  // alcance con el que el apuntado automático busca objetivos
+  get targetRange() {
+    return (this.stats.targetRange || this.stats.range) * 1.15;
   }
 
   canFire(gt) {
@@ -87,9 +104,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   fire(gt, dirX, dirY) {
-    this.nextFire = gt + 1000 / this.stats.fireRate;
+    const buff = this.buffed(gt);
+    this.nextFire = gt + 1000 / (this.stats.fireRate * (buff ? 1.4 : 1));
     const scene = this.scene;
     const base = Math.atan2(dirY, dirX);
+    if (this.cell.weapon.type === 'melee') {
+      const w = this.cell.weapon;
+      scene.meleeSwing(this.x, this.y, base, { reach: w.reach, arc: w.arc, damage: this.stats.damage * (buff ? 1.5 : 1) });
+      return;
+    }
     const ang = base + Phaser.Math.FloatBetween(-this.stats.spread, this.stats.spread);
     const ox = Math.cos(base) * 7;
     const oy = Math.sin(base) * 7;
@@ -110,7 +133,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (!this.skillReady(gt)) return false;
     this.atp -= this.stats.skillCost;
     this.skillReadyAt = gt + this.stats.skillCooldown;
-    this.scene.castNet(this.x, this.y, this.stats.skillRadius, this.stats.skillDuration);
+    if (this.cell.skill.id === 'm1') {
+      this.buffUntil = gt + this.stats.skillDuration;
+      this.armor = Math.min(this.stats.maxArmor, this.armor + 1);
+      this.scene.cytokinePulse(this.x, this.y, this.stats.skillRadius);
+    } else {
+      this.scene.castNet(this.x, this.y, this.stats.skillRadius, this.stats.skillDuration);
+    }
     Sfx.skill();
     return true;
   }
@@ -129,7 +158,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     Sfx.hurt();
     this.scene.cameras.main.shake(120, 0.006);
     this.setTintFill(0xffffff);
-    this.scene.time.delayedCall(70, () => this.active && this.clearTint());
+    this.scene.time.delayedCall(70, () => {
+      if (!this.active) return;
+      if (this.buffed(this.scene.gt)) this.setTint(0xffb27a);
+      else this.clearTint();
+    });
     if (this.hp <= 0) {
       this.hp = 0;
       this.dead = true;

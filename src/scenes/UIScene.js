@@ -231,7 +231,7 @@ export class UIScene extends Phaser.Scene {
     if (!this.touchEnabled) {
       this.skillText.setVisible(true);
       const key = t('spaceKey');
-      this.skillText.setText(`${key} NET ${ready ? '' : cd > 0 ? `· ${(cd / 1000).toFixed(1)}s` : `· ${s.skillCost} ATP`}`);
+      this.skillText.setText(`${key} ${p.cell.skill.short} ${ready ? '' : cd > 0 ? `· ${(cd / 1000).toFixed(1)}s` : `· ${s.skillCost} ATP`}`);
       this.skillText.setColor(ready ? COLORS.blue : COLORS.textDim);
     } else this.skillText.setVisible(false);
   }
@@ -368,6 +368,16 @@ export class UIScene extends Phaser.Scene {
       g.beginPath();
       g.arc(B.x, B.y, B.r - 4, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - frac), false);
       g.strokePath();
+    }
+    if (p.cell.skill.id === 'm1') {
+      // icono de activación: estallido de citocinas
+      g.lineStyle(2, 0xffb27a, ready ? 0.95 : 0.4);
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        g.lineBetween(B.x + Math.cos(a) * 7, B.y + Math.sin(a) * 7, B.x + Math.cos(a) * 15, B.y + Math.sin(a) * 15);
+      }
+      g.strokeCircle(B.x, B.y, 5);
+      return;
     }
     // icono de red (NET)
     g.lineStyle(2, 0xdfe8ff, ready ? 0.9 : 0.4);

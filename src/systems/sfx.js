@@ -85,6 +85,10 @@ export const Sfx = {
     tone({ freq: 660, dur: 0.06, type: 'square', vol: 0.18 });
     tone({ freq: 990, dur: 0.08, type: 'square', vol: 0.18, delay: 0.06 });
   },
+  swing() {
+    noise({ dur: 0.08, vol: 0.18, freq: 1600 });
+    tone({ freq: 240, to: 140, dur: 0.07, type: 'triangle', vol: 0.15 });
+  },
   skill() {
     tone({ freq: 200, to: 900, dur: 0.3, type: 'sawtooth', vol: 0.2 });
     noise({ dur: 0.3, vol: 0.2, freq: 2400 });

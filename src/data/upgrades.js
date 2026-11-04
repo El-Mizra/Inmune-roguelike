@@ -25,6 +25,7 @@ export const UPGRADES = {
     },
   },
   defensin: {
+    only: 'projectile',
     name: { es: 'α-Defensinas', en: 'α-Defensins' },
     effect: { es: 'Los disparos atraviesan 1 enemigo más', en: 'Shots pierce 1 more enemy' },
     fact: {
@@ -152,10 +153,10 @@ export const UPGRADES = {
   },
   nadph: {
     name: { es: 'NADPH oxidasa', en: 'NADPH oxidase' },
-    effect: { es: 'La NET dura más y es más grande', en: 'NET lasts longer and is bigger' },
+    effect: { es: 'Tu habilidad dura más y abarca más', en: 'Your skill lasts longer and reaches farther' },
     fact: {
-      es: 'Genera el "estallido respiratorio" de especies reactivas de oxígeno, necesario para formar NETs.',
-      en: 'It produces the "respiratory burst" of reactive oxygen species, needed to form NETs.',
+      es: 'Genera el "estallido respiratorio" de especies reactivas de oxígeno: los neutrófilos lo necesitan para formar NETs y los macrófagos para destruir lo que fagocitan.',
+      en: 'It produces the "respiratory burst" of reactive oxygen species: neutrophils need it to form NETs and macrophages to destroy what they engulf.',
     },
     apply: (s) => {
       s.skillRadius *= 1.25;

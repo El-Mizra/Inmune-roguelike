@@ -4,7 +4,7 @@ import { Player } from '../entities/Player.js';
 import { Enemy } from '../entities/Enemy.js';
 import { MRSABoss, MelanomaBoss } from '../entities/Bosses.js';
 import { ENEMIES, FLOOR_POOLS, FLOOR_BOSSES, CODEX_PATHOGENS } from '../data/enemies.js';
-import { UPGRADE_IDS } from '../data/upgrades.js';
+import { UPGRADES, UPGRADE_IDS } from '../data/upgrades.js';
 import { Controls } from '../systems/controls.js';
 import { Save, memoryTier } from '../systems/storage.js';
 import { t, lang, L } from '../systems/i18n.js';
@@ -23,6 +23,9 @@ const BURST_COLORS = {
   mrsa: 0xefc24a,
   melanoma: 0x3a2016,
 };
+
+// microbios lo bastante pequeños para ser fagocitados
+const ENGULFABLE = new Set(['saureus', 'spyogenes', 'paeruginosa', 'calbicans', 'hsv1']);
 
 export function newRun(cellId) {
   return {
@@ -205,11 +208,11 @@ export class GameScene extends Phaser.Scene {
     }
     let target = null;
     if (mode === 'auto' || !dir) {
-      target = this.nearestTarget(p.stats.range * 1.15);
+      target = this.nearestTarget(p.targetRange);
       if (target) dir = new Phaser.Math.Vector2(target.x - p.x, target.y - p.y);
       else if (!dir) dir = this.lastMove.clone();
     } else if (mode === 'assist') {
-      target = this.targetInCone(dir, 0.32, p.stats.range * 1.15);
+      target = this.targetInCone(dir, 0.32, p.targetRange);
       if (target) dir = new Phaser.Math.Vector2(target.x - p.x, target.y - p.y);
     }
     if (dir.lengthSq() > 0) dir.normalize();
@@ -335,6 +338,62 @@ export class GameScene extends Phaser.Scene {
     e.takeDamage(dmg, 'shot');
     if (b.pierce > 0) b.pierce -= 1;
     else this.killBullet(b);
+  }
+
+  // ------------------------------------------------------------------
+  // Macrófago: zarpazo con pseudópodos (fagocitosis)
+  meleeSwing(x, y, ang, { reach, arc, damage }) {
+    const g = this.add.graphics().setDepth(11);
+    g.fillStyle(0xd4b08e, 0.55);
+    g.slice(x, y, reach, ang - arc / 2, ang + arc / 2, false);
+    g.fillPath();
+    g.lineStyle(2, 0xecd0ad, 0.9);
+    g.beginPath();
+    g.arc(x, y, reach, ang - arc / 2, ang + arc / 2, false);
+    g.strokePath();
+    this.tweens.add({ targets: g, alpha: 0, duration: 140, onComplete: () => g.destroy() });
+    Sfx.swing();
+
+    const inArc = (ox, oy, extra = 0) => {
+      const d = Phaser.Math.Distance.Between(x, y, ox, oy);
+      if (d > reach + extra) return false;
+      if (d < 6) return true;
+      return Math.abs(Phaser.Math.Angle.Wrap(Math.atan2(oy - y, ox - x) - ang)) <= arc / 2;
+    };
+    // los proyectiles enemigos también se engullen
+    for (const b of this.enemyBullets.getChildren()) if (b.active && inArc(b.x, b.y, 3)) this.killBullet(b);
+
+    const p = this.player;
+    for (const e of this.enemies.getChildren().slice()) {
+      if (!e.active || e.dying || !inArc(e.x, e.y, e.radius)) continue;
+      const dmg = damage * p.damageMultiplier(e.def, e.id);
+      const engulfable = ENGULFABLE.has(e.id) && !e.isHypha;
+      const willDie = e.hp - dmg <= 0;
+      e.takeDamage(dmg, 'melee');
+      if (engulfable && willDie) {
+        p.addAtp(3);
+        if (Math.random() < 0.35) this.floatText(e.x, e.y - 8, t('phagocytosed'), '#ecd0ad');
+      }
+    }
+  }
+
+  // Macrófago: onda de TNF-α al activarse (M1)
+  cytokinePulse(x, y, radius) {
+    const ring = this.add.circle(x, y, 4).setStrokeStyle(3, 0xffb27a, 0.9).setDepth(11);
+    this.tweens.add({ targets: ring, radius, alpha: 0, duration: 380, onComplete: () => ring.destroy() });
+    this.floatText(x, y - 18, 'TNF-α', '#ffb27a');
+    this.cameras.main.shake(120, 0.004);
+    for (const e of this.enemies.getChildren().slice()) {
+      if (!e.active || e.dying) continue;
+      const d = Phaser.Math.Distance.Between(x, y, e.x, e.y);
+      if (d > radius + e.radius) continue;
+      if (!e.def.boss && !e.body.immovable) {
+        const a = Math.atan2(e.y - y, e.x - x);
+        e.setVelocity(Math.cos(a) * 260, Math.sin(a) * 260);
+        e.knockUntil = this.gt + 350;
+      }
+      e.takeDamage(2 * this.player.damageMultiplier(e.def, e.id), 'melee');
+    }
   }
 
   // ------------------------------------------------------------------
@@ -740,8 +799,10 @@ export class GameScene extends Phaser.Scene {
   offerUpgrades() {
     if (this.ending) return;
     const taken = new Set(this.run.upgrades);
-    let pool = UPGRADE_IDS.filter((id) => !taken.has(id));
-    if (pool.length < 3) pool = UPGRADE_IDS.slice();
+    const weaponType = this.player.cell.weapon.type;
+    const fits = (id) => !UPGRADES[id].only || UPGRADES[id].only === weaponType;
+    let pool = UPGRADE_IDS.filter((id) => !taken.has(id) && fits(id));
+    if (pool.length < 3) pool = UPGRADE_IDS.filter(fits);
     Phaser.Utils.Array.Shuffle(pool);
     const options = pool.slice(0, 3);
     for (const id of options) Save.discover(`up_${id}`);

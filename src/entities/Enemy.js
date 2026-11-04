@@ -78,7 +78,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   tick(dt) {
     const fn = this[`ai_${this.id}`];
-    if (fn) fn.call(this, dt);
+    if (this.gt < (this.knockUntil || 0)) {
+      // empujado (onda de TNF-α): deja que la inercia actúe antes de volver a su IA
+      this.setVelocity(this.body.velocity.x * 0.9, this.body.velocity.y * 0.9);
+    } else if (fn) fn.call(this, dt);
     // red de seguridad: si acaba dentro de un muro, sácalo al suelo más cercano
     if (this.active && this.gt >= (this.nextStuckCheck || 0)) {
       this.nextStuckCheck = this.gt + 400;

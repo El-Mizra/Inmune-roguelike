@@ -375,7 +375,7 @@ function drawTiles(scene) {
 
 export function generateTextures(scene) {
   makeTexture(scene, 'neutrophil', 16, 16, 2, drawNeutrophil);
-  makeTexture(scene, 'macrophage', 20, 20, 1, (p) => drawMacrophage(p, 0));
+  makeTexture(scene, 'macrophage', 20, 20, 2, drawMacrophage);
   makeTexture(scene, 'nkcell', 16, 16, 1, drawNK);
   makeTexture(scene, 'tcell', 14, 14, 1, drawTcell);
   makeTexture(scene, 'bcell', 14, 14, 1, drawBcell);
@@ -423,6 +423,7 @@ export function createAnimations(scene) {
     });
   };
   anim('neutrophil_idle', 'neutrophil', [0, 1], 3);
+  anim('macrophage_idle', 'macrophage', [0, 1], 2);
   anim('saureus_idle', 'saureus', [0, 1], 3);
   anim('paeruginosa_swim', 'paeruginosa', [0, 1], 8);
   anim('calbicans_idle', 'calbicans', [0, 1], 2);
