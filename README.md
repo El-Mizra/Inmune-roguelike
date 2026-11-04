@@ -39,4 +39,4 @@ El modo de apuntado (manual, asistido o automático) se cambia en **Ajustes**.
 - **Memoria inmunológica:** hace más daño a las especies que ya has vencido muchas veces.
 - Interfaz y contenido en español e inglés.
 
-El diseño completo y el plan de zonas futuras están en [`docs/GDD.md`](docs/GDD.md). Para trabajar en tu PC sin conexión, consulta [`docs/DESARROLLO_LOCAL.md`](docs/DESARROLLO_LOCAL.md).
+El diseño completo y el plan de zonas futuras están en [`docs/GDD.md`](docs/GDD.md). Para trabajar en tu PC sin conexión, consulta [`docs/DESARROLLO_LOCAL.md`](docs/DESARROLLO_LOCAL.md) y, para seguir con Claude en local, [`docs/CONTINUAR_CON_CLAUDE_LOCAL.md`](docs/CONTINUAR_CON_CLAUDE_LOCAL.md).
