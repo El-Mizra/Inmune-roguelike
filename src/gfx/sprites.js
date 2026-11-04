@@ -359,21 +359,81 @@ function drawTiles(scene) {
     px(PAL.fleck, 5, 7, 3, 2);
     px('#7b4060', 6, 7, 2, 1);
   });
-  // suelo con un eritrocito (disco bicóncavo: borde claro, centro hundido)
+  // suelo con una mancha de matriz extracelular más densa
   paint(6, () => {
     floor(PAL.floorB, 3)();
-    px('#8a2434', 6, 5, 4, 1);
-    px('#8a2434', 6, 10, 4, 1);
-    px('#8a2434', 5, 6, 1, 4);
-    px('#8a2434', 10, 6, 1, 4);
-    px('#a83040', 6, 6, 4, 4);
-    px('#7a1f2e', 7, 7, 2, 2);
+    px(PAL.floorC, 4, 5, 7, 5);
+    px(PAL.floorC, 5, 4, 5, 7);
+    px(PAL.fleck, 6, 6, 1, 1);
+    px(PAL.fleck, 9, 8, 1, 1);
   });
   if (scene.textures.exists('tiles')) scene.textures.remove('tiles');
   scene.textures.addCanvas('tiles', canvas);
 }
 
+// Decoración de la dermis (sin colisión): 0 fibroblasto, 1 adipocito,
+// 2 fibras de colágeno, 3 eritrocitos en un capilar, 4 mastocito, 5 terminación nerviosa
+function drawDecor(p, f) {
+  const R = rng(500 + f);
+  if (f === 0) {
+    // fibroblasto: célula fusiforme que fabrica colágeno
+    p.ellipse(8, 8, 6.5, 2, '#7b4a5c');
+    p.ellipse(8, 8, 2.2, 1.2, '#4e2a44');
+    p.line(1, 9, 3, 8, '#6a3c4e');
+    p.line(13, 7, 15, 6, '#6a3c4e');
+  } else if (f === 1) {
+    // adipocito: gota de grasa grande con el núcleo aplastado al borde
+    p.disc(8, 8, 6.5, '#8a5a52');
+    p.disc(8, 8, 5.5, '#c99a82');
+    p.disc(7, 7, 2.5, '#e2bea4');
+    p.ellipse(13.2, 9, 1, 1.8, '#4e2a44');
+  } else if (f === 2) {
+    // fibras de colágeno onduladas
+    for (let k = 0; k < 3; k++) {
+      for (let x = 0; x < 16; x++) p.set(x, 5 + k * 3 + Math.round(Math.sin(x * 0.7 + k) * 1), k === 1 ? '#a8606c' : '#8c4c5a');
+    }
+  } else if (f === 3) {
+    // eritrocitos (discos bicóncavos) en fila, como dentro de un capilar
+    p.rect(0, 5, 16, 6, '#5a1a28');
+    for (const x of [3, 8, 13]) {
+      p.disc(x, 8, 2.4, '#b8303e');
+      p.set(x, 8, '#8a1f2c');
+    }
+  } else if (f === 4) {
+    // mastocito: lleno de gránulos de histamina
+    p.disc(8, 8, 4.5, '#7a4a8a');
+    p.speckle('#c48ad6', 10, R);
+    p.disc(8, 8, 1.5, '#3e2050');
+  } else {
+    // terminación nerviosa libre
+    p.line(0, 12, 6, 8, '#d0a070');
+    p.line(6, 8, 10, 3, '#d0a070');
+    p.line(6, 8, 13, 9, '#d0a070');
+    p.line(10, 3, 12, 1, '#d0a070');
+    p.set(13, 9, '#f0d0a0');
+    p.set(12, 1, '#f0d0a0');
+  }
+}
+
+// Viñeta suave (bordes oscuros) para dar profundidad.
+function drawVignette(scene) {
+  if (scene.textures.exists('vignette')) return;
+  const c = document.createElement('canvas');
+  c.width = 256;
+  c.height = 256;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(128, 128, 60, 128, 128, 182);
+  g.addColorStop(0, 'rgba(18,6,12,0)');
+  g.addColorStop(1, 'rgba(18,6,12,0.75)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 256, 256);
+  scene.textures.addCanvas('vignette', c);
+}
+
 export function generateTextures(scene) {
+  makeTexture(scene, 'decor', 16, 16, 6, drawDecor);
+  makeTexture(scene, 'shadow', 12, 5, 1, (p) => p.ellipse(6, 2.5, 6, 2.5, '#000000'));
+  drawVignette(scene);
   makeTexture(scene, 'neutrophil', 16, 16, 2, drawNeutrophil);
   makeTexture(scene, 'macrophage', 20, 20, 2, drawMacrophage);
   makeTexture(scene, 'nkcell', 16, 16, 2, drawNK);

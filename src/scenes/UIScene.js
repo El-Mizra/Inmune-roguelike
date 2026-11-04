@@ -19,6 +19,7 @@ export class UIScene extends Phaser.Scene {
     this.touches = { move: null, aim: null };
     this.discoverQueue = [];
 
+    this.vignette = this.add.image(0, 0, 'vignette').setOrigin(0).setDepth(-10).setAlpha(0.9);
     this.hud = this.add.graphics();
     this.mini = this.add.graphics();
     this.tg = this.add.graphics();
@@ -83,6 +84,7 @@ export class UIScene extends Phaser.Scene {
   layout() {
     const W = this.scale.width;
     const H = this.scale.height;
+    this.vignette.setDisplaySize(W, H);
     this.W = W;
     this.H = H;
     const x0 = 14;

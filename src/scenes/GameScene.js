@@ -119,6 +119,21 @@ export class GameScene extends Phaser.Scene {
     cam.fadeIn(400, 18, 6, 12);
 
     this.aimG = this.add.graphics().setDepth(20);
+    this.shadowG = this.add.graphics().setDepth(2);
+    this.scatterDecor();
+    // partículas ambientales: proteínas y citocinas flotando en el líquido intersticial
+    this.ambient = this.add.particles(0, 0, 'pixel', {
+      x: { min: 0, max: map.widthInPixels },
+      y: { min: 0, max: map.heightInPixels },
+      lifespan: 6000,
+      speedX: { min: -6, max: 6 },
+      speedY: { min: -4, max: 4 },
+      scale: { min: 0.4, max: 0.9 },
+      alpha: { values: [0, 0.4, 0.4, 0] },
+      tint: [0xf4d8e0, 0xc7787f, 0xffd166],
+      frequency: 60,
+      quantity: 1,
+    }).setDepth(15);
 
     // --- entrada (teclado y ratón) ---
     this.keys = this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,ESC,J,K,E,P');
@@ -171,6 +186,7 @@ export class GameScene extends Phaser.Scene {
 
     this.updateNets();
     this.updatePickups(dt);
+    this.drawShadows();
     this.updateRooms();
   }
 
@@ -905,7 +921,43 @@ export class GameScene extends Phaser.Scene {
 
   // ------------------------------------------------------------------
   // Efectos
+  // Decoración del tejido: se dibuja una sola vez, sin colisiones.
+  scatterDecor() {
+    const f = this.floor;
+    for (const r of f.rooms) {
+      const n = Math.floor((r.w * r.h) / 40);
+      for (let i = 0; i < n; i++) {
+        const tx = Phaser.Math.Between(r.x + 2, r.x + r.w - 3);
+        const ty = Phaser.Math.Between(r.y + 2, r.y + r.h - 3);
+        if (!f.isFloor(tx, ty)) continue;
+        const frame = Phaser.Math.Between(0, 5);
+        this.add
+          .image((tx + 0.5) * TILE, (ty + 0.5) * TILE, 'decor', frame)
+          .setDepth(1)
+          .setAlpha(0.75)
+          .setAngle(frame === 2 || frame === 3 ? Phaser.Math.RND.pick([0, 90]) : Phaser.Math.Between(-20, 20));
+      }
+    }
+  }
+
+  // Sombras bajo las células para que "floten" sobre el tejido.
+  drawShadows() {
+    const g = this.shadowG;
+    g.clear();
+    g.fillStyle(0x000000, 0.28);
+    const p = this.player;
+    if (p.active && !p.dead) g.fillEllipse(p.x, p.y + 7, 13, 4);
+    for (const e of this.enemies.getChildren()) {
+      if (!e.active || e.alpha < 0.5) continue;
+      const w = Math.max(6, e.radius * 2.2);
+      g.fillEllipse(e.x, e.y + e.radius + 1, w, Math.max(3, w * 0.3));
+    }
+  }
+
   burstFx(x, y, color, count = 10) {
+    // anillo de lisis (la membrana se rompe)
+    const ring = this.add.circle(x, y, 3).setStrokeStyle(1, color, 0.9).setDepth(12);
+    this.tweens.add({ targets: ring, radius: 8 + count * 0.4, alpha: 0, duration: 260, onComplete: () => ring.destroy() });
     const em = this.add.particles(x, y, 'pixel', {
       speed: { min: 30, max: 110 },
       lifespan: { min: 250, max: 550 },
