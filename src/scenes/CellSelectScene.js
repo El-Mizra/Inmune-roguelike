@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { t, L } from '../systems/i18n.js';
-import { CELLS, CELL_ORDER } from '../data/cells.js';
+import { CELLS, CELL_ORDER, isUnlocked } from '../data/cells.js';
 import { title, body, button, panel, fadeIn, restartOnResize, floatingBackdrop, drawPanel, COLORS, FONT_TITLE } from '../systems/ui.js';
 import { newRun } from './GameScene.js';
 import { Save } from '../systems/storage.js';
@@ -38,22 +38,22 @@ export class CellSelectScene extends Phaser.Scene {
       const g = this.add.graphics();
       drawPanel(g, x, cy, cw, ch, {
         fill: sel ? 0x5a2236 : COLORS.panel,
-        border: sel ? COLORS.accent : c.playable ? COLORS.border : COLORS.borderDim,
+        border: sel ? COLORS.accent : isUnlocked(id) ? COLORS.border : COLORS.borderDim,
       });
       const spr = this.add.sprite(x + cw / 2, cy + 58, c.texture, 0).setScale(4);
-      if (c.playable) spr.play(`${c.texture}_idle`, true);
+      if (isUnlocked(id)) spr.play(`${c.texture}_idle`, true);
       else spr.setTint(0x3a2030);
       this.add
         .text(x + cw / 2, cy + 112, L(c.name), {
           fontFamily: '"VT323", monospace',
           fontSize: '22px',
-          color: c.playable ? COLORS.text : COLORS.textDim,
+          color: isUnlocked(id) ? COLORS.text : COLORS.textDim,
           align: 'center',
           wordWrap: { width: cw - 8 },
         })
         .setOrigin(0.5, 0);
-      if (!c.playable) {
-        this.add.text(x + cw / 2, cy + 14, t('locked'), { fontFamily: FONT_TITLE, fontSize: '8px', color: COLORS.textDim }).setOrigin(0.5);
+      if (!isUnlocked(id)) {
+        this.add.text(x + cw / 2, cy + 14, t(c.playable ? 'lockedCell' : 'locked'), { fontFamily: FONT_TITLE, fontSize: '8px', color: COLORS.textDim }).setOrigin(0.5);
       }
       const z = this.add.zone(x, cy, cw, ch).setOrigin(0).setInteractive({ useHandCursor: true });
       z.on('pointerup', () => {
@@ -81,9 +81,12 @@ export class CellSelectScene extends Phaser.Scene {
       ty += s1.height + 8;
       const facts = L(c.facts);
       const fact = facts[Math.floor(Math.random() * facts.length)];
-      if (ty + 40 < py + ph) body(this, px + 16, ty, `${t('realFact')}: ${fact}`, 20, COLORS.textDim, wrap);
+      if (ty + 40 < py + ph && isUnlocked(this.selected)) body(this, px + 16, ty, `${t('realFact')}: ${fact}`, 20, COLORS.textDim, wrap);
     } else {
       body(this, px + 16, ty, t('locked'), 22, COLORS.textDim);
+    }
+    if (c.playable && !isUnlocked(this.selected)) {
+      body(this, px + 16, py + ph - 34, `${t('unlockReq')}: ${L(c.unlock.text)}`, 22, COLORS.gold, wrap);
     }
 
     button(this, W / 2 - 150, H - 36, 220, 44, t('back'), () => this.scene.start('Menu'), { size: 11 });
@@ -98,7 +101,7 @@ export class CellSelectScene extends Phaser.Scene {
         this.cameras.main.fadeOut(250, 18, 6, 12);
         this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Game', { run: newRun(this.selected) }));
       },
-      { size: 12, enabled: !!c.playable },
+      { size: 12, enabled: isUnlocked(this.selected) },
     );
   }
 }

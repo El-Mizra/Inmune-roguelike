@@ -114,7 +114,18 @@ Cada carta muestra el efecto y un dato real.
 | Glucólisis acelerada | + regeneración de ATP |
 | NADPH oxidasa | NET más grande y duradera |
 
-## 7. Progresión entre partidas: memoria inmunológica
+## 7. Progresión entre partidas
+
+### Desbloqueo de células
+| Célula | Cómo se desbloquea |
+|---|---|
+| Neutrófilo | Disponible desde el inicio (el primero en llegar) |
+| Macrófago | Completar 1 partida |
+| Célula NK | Eliminar 15 viriones de herpes o células infectadas |
+| Linfocito T CD8 | Derrotar al MRSA |
+| Linfocito B | Memoria inmunológica nivel 1 contra 2 especies |
+
+### Memoria inmunológica
 
 - Las muertes por especie se acumulan entre partidas.
 - Hay tres niveles: 10, 30 y 75 eliminados, que dan +10%, +20% y +30% de daño contra esa especie.

@@ -55,11 +55,17 @@ No hay tests automáticos. Para validar cambios, ejecuta `npm run build` y prueb
   - **Patógenos:** S. aureus, S. pyogenes, P. aeruginosa, Candida y HSV-1.
   - **Jefes:** MRSA y melanoma.
 - **Sistemas:** 14 mejoras, enciclopedia y memoria inmunológica entre partidas.
+- **Desbloqueo de células** (`unlock` en `cells.js`, `isUnlocked()`):
+  - Neutrófilo: libre desde el principio.
+  - Macrófago: completar 1 partida.
+  - NK: eliminar 15 viriones de herpes o células infectadas.
+  - T CD8: vencer al MRSA.
+  - B: memoria inmunológica nivel 1 contra 2 especies.
 - **Arte:** sombras, decoración de la dermis (`decor`), partículas ambientales, viñeta, anillo de lisis y pseudópodo al moverse.
 
 ## Próximos pasos sugeridos
 
-1. Eosinófilo (para parásitos en la zona del intestino) y sistema de desbloqueo de células.
+1. Aviso en la pantalla de resultados cuando se desbloquea una célula; eosinófilo (parásitos, zona intestino).
 2. Más arte: sprites hechos a mano, música.
 3. Zona 2, el pulmón: *S. pneumoniae*, influenza y *Aspergillus*; como jefes, tuberculosis (granuloma) y cáncer de pulmón.
 4. Música, y empaquetado con Capacitor para Android.

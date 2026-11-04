@@ -1,3 +1,5 @@
+import { Save, memoryTier } from '../systems/storage.js';
+
 // Células jugables. Por ahora solo el neutrófilo; el resto aparece como
 // "próximamente" para mostrar la dirección del juego.
 
@@ -63,6 +65,10 @@ export const CELLS = {
   },
   macrophage: {
     playable: true,
+    unlock: {
+      check: (s) => s.runs >= 1,
+      text: { es: 'Completa 1 partida (ganes o pierdas).', en: 'Finish 1 run (win or lose).' },
+    },
     texture: 'macrophage',
     bodyRadius: 7,
     podColor: 0xb48d70,
@@ -124,6 +130,10 @@ export const CELLS = {
   },
   nk: {
     playable: true,
+    unlock: {
+      check: (s) => (s.kills.hsv1 || 0) + (s.kills.infected || 0) >= 15,
+      text: { es: 'Elimina 15 viriones de herpes o células infectadas.', en: 'Eliminate 15 herpes virions or infected cells.' },
+    },
     texture: 'nkcell',
     podColor: 0xa9b9d6,
     name: { es: 'Célula NK', en: 'NK cell' },
@@ -186,6 +196,10 @@ export const CELLS = {
   },
   tcd8: {
     playable: true,
+    unlock: {
+      check: (s) => (s.kills.mrsa || 0) >= 1,
+      text: { es: 'Derrota al jefe MRSA.', en: 'Defeat the MRSA boss.' },
+    },
     texture: 'tcell',
     podColor: 0x93c7ad,
     name: { es: 'Linfocito T CD8', en: 'CD8 T cell' },
@@ -248,6 +262,10 @@ export const CELLS = {
   },
   bcell: {
     playable: true,
+    unlock: {
+      check: (s) => Object.keys(s.kills).filter((id) => memoryTier(id) >= 1).length >= 2,
+      text: { es: 'Alcanza memoria inmunológica nivel 1 contra 2 especies.', en: 'Reach immunological memory tier 1 against 2 species.' },
+    },
     texture: 'bcell',
     podColor: 0xc9b47e,
     name: { es: 'Linfocito B', en: 'B cell' },
@@ -314,3 +332,11 @@ export const CELLS = {
 };
 
 export const CELL_ORDER = ['neutrophil', 'macrophage', 'nk', 'tcd8', 'bcell'];
+
+// Una célula se puede elegir si es jugable y cumple su condición de desbloqueo.
+export function isUnlocked(id) {
+  const c = CELLS[id];
+  if (!c.playable) return false;
+  if (!c.unlock) return true;
+  return c.unlock.check({ ...Save.stats, kills: Save.kills });
+}
