@@ -5,6 +5,7 @@ export const CELLS = {
   neutrophil: {
     playable: true,
     texture: 'neutrophil',
+    podColor: 0xdcb4c8,
     name: { es: 'Neutrófilo', en: 'Neutrophil' },
     branch: 'innate',
     stats: {
@@ -64,6 +65,7 @@ export const CELLS = {
     playable: true,
     texture: 'macrophage',
     bodyRadius: 7,
+    podColor: 0xb48d70,
     name: { es: 'Macrófago', en: 'Macrophage' },
     branch: 'innate',
     stats: {
@@ -123,6 +125,7 @@ export const CELLS = {
   nk: {
     playable: true,
     texture: 'nkcell',
+    podColor: 0xa9b9d6,
     name: { es: 'Célula NK', en: 'NK cell' },
     branch: 'innate',
     // "falta de lo propio": ve y daña normalmente a los tumores que esconden su MHC-I

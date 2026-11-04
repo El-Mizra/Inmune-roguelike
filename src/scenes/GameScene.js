@@ -120,6 +120,7 @@ export class GameScene extends Phaser.Scene {
 
     this.aimG = this.add.graphics().setDepth(20);
     this.shadowG = this.add.graphics().setDepth(2);
+    this.podG = this.add.graphics().setDepth(9);
     this.scatterDecor();
     // partículas ambientales: proteínas y citocinas flotando en el líquido intersticial
     this.ambient = this.add.particles(0, 0, 'pixel', {
@@ -947,6 +948,23 @@ export class GameScene extends Phaser.Scene {
     g.fillStyle(0x000000, 0.28);
     const p = this.player;
     if (p.active && !p.dead) g.fillEllipse(p.x, p.y + 7, 13, 4);
+    // movimiento ameboide: el borde frontal (lamelipodio) se estira hacia donde avanza
+    const pg = this.podG;
+    pg.clear();
+    const v = p.body.velocity;
+    const sp = Math.hypot(v.x, v.y);
+    if (p.active && !p.dead && sp > 10) {
+      const dx = v.x / sp;
+      const dy = v.y / sp;
+      const pulse = 0.6 + 0.4 * Math.sin(this.gt * 0.018);
+      const r = (p.cell.bodyRadius || 5) + 1;
+      pg.fillStyle(0x1a0710, p.alpha);
+      pg.fillCircle(p.x + dx * r * pulse, p.y + dy * r * pulse, r * 0.55 + 1);
+      pg.fillStyle(p.cell.podColor || 0xdcb4c8, p.alpha);
+      pg.fillCircle(p.x + dx * r * pulse, p.y + dy * r * pulse, r * 0.55);
+      pg.fillStyle(0x1a0710, 0.5 * p.alpha);
+      pg.fillCircle(p.x - dx * r * 0.9, p.y - dy * r * 0.9 + 1, 1.5);
+    }
     for (const e of this.enemies.getChildren()) {
       if (!e.active || e.alpha < 0.5) continue;
       const w = Math.max(6, e.radius * 2.2);
