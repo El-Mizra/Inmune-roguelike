@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { generateFloor, TILE, SOLID } from '../systems/dungeon.js';
 import { Player } from '../entities/Player.js';
+import { CELLS, CELL_ORDER, isUnlocked } from '../data/cells.js';
 import { Enemy } from '../entities/Enemy.js';
 import { MRSABoss, MelanomaBoss } from '../entities/Bosses.js';
 import { ENEMIES, FLOOR_POOLS, FLOOR_BOSSES, CODEX_PATHOGENS } from '../data/enemies.js';
@@ -968,6 +969,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   finishRun(won) {
+    const lockedBefore = CELL_ORDER.filter((id) => CELLS[id].playable && !isUnlocked(id));
     const summary = Object.entries(this.run.kills).map(([id, n]) => {
       const before = memoryTier(id);
       return { id, n, before };
@@ -975,7 +977,8 @@ export class GameScene extends Phaser.Scene {
     Save.addKills(this.run.kills);
     for (const s of summary) s.after = memoryTier(s.id);
     Save.endRun(won);
-    const data = { won, time: this.run.elapsed, kills: summary, floor: this.run.floor, upgrades: this.run.upgrades.slice() };
+    const unlocked = lockedBefore.filter((id) => isUnlocked(id));
+    const data = { won, time: this.run.elapsed, kills: summary, floor: this.run.floor, upgrades: this.run.upgrades.slice(), unlocked };
     this.cameras.main.fadeOut(500, 18, 6, 12);
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.scene.stop('UI');

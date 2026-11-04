@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { t, L } from '../systems/i18n.js';
 import { ENEMIES } from '../data/enemies.js';
+import { CELLS } from '../data/cells.js';
 import { MEMORY_TIERS } from '../systems/storage.js';
 import { title, body, button, panel, fadeIn, floatingBackdrop, restartOnResize, COLORS } from '../systems/ui.js';
 
@@ -62,6 +63,16 @@ export class ResultScene extends Phaser.Scene {
       body(this, px + 20, y, `${L(ENEMIES[g.id].name)}: ${t('tier')} ${g.after} (+${bonus}% ${t('dmgVs')})`, 20, COLORS.green);
       y += 24;
     }
+
+    // células desbloqueadas en esta partida
+    (d.unlocked || []).forEach((id, i) => {
+      const c = CELLS[id];
+      const y = H - 104 - i * 34;
+      const spr = this.add.sprite(px + 34, y, c.texture, 0).setScale(2);
+      spr.play(`${c.texture}_idle`);
+      const txt = body(this, px + 58, y - 13, `${t('newCell')}: ${L(c.name)}`, 26, COLORS.gold);
+      this.tweens.add({ targets: [spr, txt], alpha: { from: 0.4, to: 1 }, duration: 500, yoyo: true, repeat: -1 });
+    });
 
     button(this, W / 2 - 150, H - 36, 240, 44, t('toMenu'), () => this.scene.start('Menu'), { size: 10 });
     button(this, W / 2 + 150, H - 36, 240, 44, t('playAgain'), () => this.scene.start('CellSelect'), { size: 10 });
