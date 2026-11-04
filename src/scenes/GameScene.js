@@ -9,7 +9,7 @@ import { UPGRADES, UPGRADE_IDS } from '../data/upgrades.js';
 import { Controls } from '../systems/controls.js';
 import { Save, memoryTier } from '../systems/storage.js';
 import { t, lang, L } from '../systems/i18n.js';
-import { Sfx } from '../systems/sfx.js';
+import { Sfx, Music } from '../systems/sfx.js';
 import { PAL } from '../gfx/sprites.js';
 
 const BURST_COLORS = {
@@ -157,6 +157,7 @@ export class GameScene extends Phaser.Scene {
     this.game.events.on('blur', onBlur);
     this.events.once('shutdown', () => this.game.events.off('blur', onBlur));
 
+    Music.play('explore');
     if (!this.scene.isActive('UI')) this.scene.launch('UI');
     else this.scene.get('UI').events.emit('floorchanged');
     this.time.delayedCall(250, () => {
@@ -818,6 +819,7 @@ export class GameScene extends Phaser.Scene {
     room.pending = 1;
     this.closeDoors(room);
     Sfx.boss();
+    Music.play('boss');
     const id = FLOOR_BOSSES[Math.min(this.floorIndex, FLOOR_BOSSES.length - 1)];
     this.events.emit('banner', t('bossIncoming'), L(ENEMIES[id].name));
     this.cameras.main.shake(400, 0.004);
@@ -854,6 +856,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   onBossRoomCleared(room) {
+    Music.play('explore');
     // limpia proyectiles enemigos
     for (const b of this.enemyBullets.getChildren()) if (b.active) this.killBullet(b, false);
     const x = (room.cx + 0.5) * TILE;
@@ -969,6 +972,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   finishRun(won) {
+    Music.stop();
     const lockedBefore = CELL_ORDER.filter((id) => CELLS[id].playable && !isUnlocked(id));
     const summary = Object.entries(this.run.kills).map(([id, n]) => {
       const before = memoryTier(id);

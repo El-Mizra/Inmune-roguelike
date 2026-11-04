@@ -66,6 +66,6 @@ No hay tests automáticos. Para validar cambios, ejecuta `npm run build` y prueb
 ## Próximos pasos sugeridos
 
 1. Eosinófilo (parásitos, zona intestino).
-2. Más arte: sprites hechos a mano, música.
+2. Más arte: sprites hechos a mano (ya hay música procedural en `sfx.js`, objeto `Music`).
 3. Zona 2, el pulmón: *S. pneumoniae*, influenza y *Aspergillus*; como jefes, tuberculosis (granuloma) y cáncer de pulmón.
 4. Música, y empaquetado con Capacitor para Android.

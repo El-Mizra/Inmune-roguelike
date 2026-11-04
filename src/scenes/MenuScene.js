@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { t } from '../systems/i18n.js';
 import { Save } from '../systems/storage.js';
-import { Sfx } from '../systems/sfx.js';
+import { Sfx, Music } from '../systems/sfx.js';
 import { title, body, button, floatingBackdrop, fadeIn, restartOnResize, COLORS } from '../systems/ui.js';
 
 export class MenuScene extends Phaser.Scene {
@@ -16,6 +16,7 @@ export class MenuScene extends Phaser.Scene {
     fadeIn(this);
     floatingBackdrop(this, 22);
     restartOnResize(this);
+    Music.stop();
 
     const top = H * 0.17;
     title(this, W / 2 + 3, top + 3, t('title'), 40, '#3a1220');

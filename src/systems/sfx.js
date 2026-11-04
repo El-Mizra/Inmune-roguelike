@@ -113,3 +113,55 @@ export const Sfx = {
     tone({ freq: 740, dur: 0.04, type: 'square', vol: 0.12 });
   },
 };
+
+// ---------------------------------------------------------------
+// Música de fondo generada en tiempo real (escala pentatónica menor).
+// Un patrón de 16 pasos: bajo, melodía y un pulso suave de percusión.
+const PATTERNS = {
+  explore: {
+    bpm: 84,
+    root: 110, // La2
+    bass: [0, null, null, null, 0, null, 3, null, 5, null, null, null, 3, null, -2, null],
+    lead: [12, null, 15, null, 17, null, 15, 12, null, null, 10, null, 12, null, null, null, 7, null, 10, null, 12, null, 15, null, 17, null, 19, 17, 15, null, null, null],
+    drum: false,
+  },
+  boss: {
+    bpm: 136,
+    root: 98, // Sol2
+    bass: [0, null, 0, null, 0, null, 3, null, 0, null, 0, null, -2, null, 1, null],
+    lead: [12, 15, 17, 15, 12, null, 10, 12, 13, null, 12, 10, 7, null, 10, null],
+    drum: true,
+  },
+};
+let musicTimer = null;
+let musicMode = null;
+let musicStep = 0;
+
+function musicTick(p) {
+  if (!Save.settings.sound) return;
+  if (!ac()) return;
+  const i = musicStep++;
+  const b = p.bass[i % p.bass.length];
+  if (b != null) tone({ freq: p.root * 2 ** (b / 12), dur: 0.32, type: 'triangle', vol: 0.16 });
+  const n = p.lead[i % p.lead.length];
+  if (n != null) tone({ freq: p.root * 2 * 2 ** (n / 12), dur: 0.14, type: 'square', vol: 0.035 });
+  if (p.drum && i % 4 === 0) noise({ dur: 0.06, vol: 0.12, freq: 260 });
+  if (p.drum && i % 8 === 4) noise({ dur: 0.05, vol: 0.06, freq: 3000 });
+}
+
+export const Music = {
+  play(kind) {
+    if (musicMode === kind) return;
+    this.stop();
+    const p = PATTERNS[kind];
+    if (!p) return;
+    musicMode = kind;
+    musicStep = 0;
+    musicTimer = setInterval(() => musicTick(p), 60000 / p.bpm / 4);
+  },
+  stop() {
+    if (musicTimer) clearInterval(musicTimer);
+    musicTimer = null;
+    musicMode = null;
+  },
+};
