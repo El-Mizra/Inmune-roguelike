@@ -69,10 +69,14 @@ Fin de la partida → resumen + memoria inmunológica ganada
 - **Pasiva, aprendizaje adaptativo:** +2% de daño contra una especie por cada eliminado de esa especie durante la partida (máximo +40%).
 - **Habilidad, expansión clonal:** 2 clones aliados cazan durante 9 s.
 
+### Linfocito B (disponible)
+- **Ataque, anticuerpos IgG:** largo alcance y poco daño, pero **opsonizan** (el enemigo recibe +30% de daño de todo durante 4 s) y **neutralizan** los viriones libres de un impacto.
+- **Habilidad, célula plasmática:** ráfaga de 16 anticuerpos perforantes en todas direcciones.
+- **Rol:** apoyo a distancia.
+
 ### Próximamente
 | Célula | Estilo | Especialidad realista |
 |---|---|---|
-| Linfocito B / célula plasmática | Dispara anticuerpos | Marca (opsoniza) y neutraliza virus y toxinas |
 | Eosinófilo | Gránulos explosivos | Parásitos (zona intestino) |
 
 ## 5. Enemigos de la Zona 1 (piel, herida infectada)

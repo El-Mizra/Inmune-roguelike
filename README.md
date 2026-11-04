@@ -1,6 +1,6 @@
 # Inmune
 
-Roguelike pixel-art del sistema inmune, inspirado en *Soul Knight*. Controlas células inmunes reales (por ahora, el **neutrófilo**, el **macrófago**, la **célula NK** y el **linfocito T CD8**) contra bacterias, hongos, virus y cáncer, con mecánicas basadas en biología real. Se juega en navegador, en PC y en móvil.
+Roguelike pixel-art del sistema inmune, inspirado en *Soul Knight*. Controlas células inmunes reales (**neutrófilo**, **macrófago**, **célula NK**, **linfocito T CD8** y **linfocito B**) contra bacterias, hongos, virus y cáncer, con mecánicas basadas en biología real. Se juega en navegador, en PC y en móvil.
 
 *Immune system pixel-art roguelike inspired by Soul Knight. Playable on desktop and mobile browsers, in Spanish and English.*
 

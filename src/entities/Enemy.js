@@ -92,6 +92,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   takeDamage(amount, source = 'shot') {
     if (!this.active || this.dying) return;
     let dmg = amount * this.dmgTakenMult;
+    // opsonizado por anticuerpos: más fácil de destruir
+    if (this.gt < (this.opsonizedUntil || 0)) dmg *= 1.3;
     if (this.isHypha) dmg *= source === 'net' ? 3 : 0.5;
     this.hp -= dmg;
     this.scene.showDamage(this.x, this.y - this.height / 2, dmg);
@@ -104,7 +106,17 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   restoreTint() {
-    this.clearTint();
+    if (this.gt < (this.opsonizedUntil || 0)) this.setTint(0xfff0a0);
+    else this.clearTint();
+  }
+
+  opsonize(ms) {
+    const was = this.gt < (this.opsonizedUntil || 0);
+    this.opsonizedUntil = this.gt + ms;
+    if (!was) this.setTint(0xfff0a0);
+    this.scene.time.delayedCall(ms + 20, () => {
+      if (this.active && !this.dying && this.gt >= this.opsonizedUntil) this.restoreTint();
+    });
   }
 
   die(silent = false) {

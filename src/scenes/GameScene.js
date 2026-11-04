@@ -320,7 +320,7 @@ export class GameScene extends Phaser.Scene {
 
   // ------------------------------------------------------------------
   // Proyectiles
-  firePlayerBullet(x, y, ang, { speed, damage, pierce, life, texture = 'granule' }) {
+  firePlayerBullet(x, y, ang, { speed, damage, pierce, life, texture = 'granule', opsonize = false, neutralize = null }) {
     const b = this.playerBullets.get(x, y, texture);
     if (!b) return;
     b.enableBody(true, x, y, true, true);
@@ -332,6 +332,9 @@ export class GameScene extends Phaser.Scene {
     b.pierce = pierce;
     b.dieAt = this.gt + life;
     b.hits = new Set();
+    b.opsonize = opsonize;
+    b.neutralize = neutralize;
+    b.setRotation(texture === 'antibody' ? ang + Math.PI / 2 : 0);
   }
 
   fireEnemyBullet(x, y, ang, texture, speed, damage = 1) {
@@ -359,6 +362,10 @@ export class GameScene extends Phaser.Scene {
     let dmg = b.damage * this.player.damageMultiplier(e.def, e.id);
     // la célula NK ignora el camuflaje por pérdida de MHC-I
     if (e.stealth && this.player.cell.seesStealth) dmg /= e.dmgTakenMult;
+    // anticuerpos: neutralizan virus libres y marcan (opsonizan) al resto
+    if (b.neutralize && b.neutralize.includes(e.id)) dmg = Math.max(dmg, e.hp + 1);
+    if (b.opsonize && !e.def.boss) e.opsonize(4000);
+    else if (b.opsonize) e.opsonize(1500);
     e.takeDamage(dmg, 'shot');
     if (b.pierce > 0) b.pierce -= 1;
     else this.killBullet(b);

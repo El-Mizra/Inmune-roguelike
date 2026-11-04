@@ -68,9 +68,9 @@ function drawTcell(p, f = 0) {
   p.outline(PAL.outline);
 }
 
-function drawBcell(p) {
-  p.blob(7, 7, 5.6, ['#a08a5a', '#c9b47e', '#e5d6a4', '#fff6d0']);
-  p.blob(7, 7, 4, ['#3a2450', '#53357a', '#6e4ba0']);
+function drawBcell(p, f = 0) {
+  p.blob(7, 7, 5.6, ['#a08a5a', '#c9b47e', '#e5d6a4', '#fff6d0'], wob(f * 1.7, 0.05, 5));
+  p.blob(7, 7.3, 4, ['#3a2450', '#53357a', '#6e4ba0']);
   // anticuerpo en "Y"
   p.line(12, 2, 12, 4, '#ffe46b');
   p.set(11, 1, '#ffe46b');
@@ -441,7 +441,17 @@ export function generateTextures(scene) {
   makeTexture(scene, 'macrophage', 20, 20, 2, drawMacrophage);
   makeTexture(scene, 'nkcell', 16, 16, 2, drawNK);
   makeTexture(scene, 'tcell', 14, 14, 2, drawTcell);
-  makeTexture(scene, 'bcell', 14, 14, 1, drawBcell);
+  makeTexture(scene, 'bcell', 14, 14, 2, drawBcell);
+  // anticuerpo IgG en forma de "Y"
+  makeTexture(scene, 'antibody', 7, 8, 1, (p) => {
+    const c = '#ffe46b';
+    p.line(3, 4, 3, 7, c);
+    p.line(3, 4, 1, 1, c);
+    p.line(3, 4, 5, 1, c);
+    p.set(0, 0, '#fff6d0');
+    p.set(6, 0, '#fff6d0');
+    p.outline(PAL.outline);
+  });
 
   makeTexture(scene, 'saureus', 13, 12, 2, drawSaureus);
   makeTexture(scene, 'spyogenes', 8, 8, 1, drawSpyogenes);
@@ -491,6 +501,7 @@ export function createAnimations(scene) {
   anim('macrophage_idle', 'macrophage', [0, 1], 2);
   anim('nkcell_idle', 'nkcell', [0, 1], 3);
   anim('tcell_idle', 'tcell', [0, 1], 3);
+  anim('bcell_idle', 'bcell', [0, 1], 3);
   anim('saureus_idle', 'saureus', [0, 1], 3);
   anim('paeruginosa_swim', 'paeruginosa', [0, 1], 8);
   anim('calbicans_idle', 'calbicans', [0, 1], 2);

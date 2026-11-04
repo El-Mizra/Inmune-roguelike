@@ -371,6 +371,16 @@ export class UIScene extends Phaser.Scene {
       g.arc(B.x, B.y, B.r - 4, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - frac), false);
       g.strokePath();
     }
+    if (p.cell.skill.id === 'volley') {
+      // icono de ráfaga de anticuerpos (Y en estrella)
+      g.lineStyle(2, 0xffe46b, ready ? 0.95 : 0.4);
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2;
+        g.lineBetween(B.x + Math.cos(a) * 5, B.y + Math.sin(a) * 5, B.x + Math.cos(a) * 15, B.y + Math.sin(a) * 15);
+      }
+      g.strokeCircle(B.x, B.y, 4);
+      return;
+    }
     if (p.cell.skill.id === 'clonal') {
       // icono de expansión clonal: una célula dividiéndose en dos
       g.lineStyle(2, 0x93c7ad, ready ? 0.95 : 0.4);

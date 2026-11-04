@@ -247,13 +247,68 @@ export const CELLS = {
     },
   },
   bcell: {
-    playable: false,
+    playable: true,
     texture: 'bcell',
+    podColor: 0xc9b47e,
     name: { es: 'Linfocito B', en: 'B cell' },
     branch: 'adaptive',
+    stats: {
+      maxHp: 5,
+      maxArmor: 3,
+      maxAtp: 100,
+      speed: 88,
+      damage: 1.6,
+      fireRate: 4.6,
+      bulletSpeed: 250,
+      spread: 0.05,
+      range: 230,
+    },
+    weapon: {
+      type: 'projectile',
+      texture: 'antibody',
+      // opsoniza: el enemigo marcado recibe +30% de daño de todo durante 4 s
+      opsonize: true,
+      // neutraliza: los viriones libres caen de un solo impacto
+      neutralize: ['hsv1'],
+      name: { es: 'Anticuerpos (IgG)', en: 'Antibodies (IgG)' },
+      desc: {
+        es: 'Largo alcance y poco daño, pero marcan (opsonizan) al enemigo: recibe +30% de daño de todo durante 4 s. Neutralizan los virus libres de un impacto.',
+        en: 'Long range and low damage, but they tag (opsonize) enemies: +30% damage taken from everything for 4 s. They neutralize free viruses in one hit.',
+      },
+    },
+    skill: {
+      id: 'volley',
+      short: { es: 'Ráfaga', en: 'Burst' },
+      cost: 35,
+      cooldown: 7000,
+      duration: 0,
+      radius: 0,
+      count: 16,
+      name: { es: 'Célula plasmática', en: 'Plasma cell' },
+      desc: {
+        es: 'Te diferencias por un momento en célula plasmática y liberas una ráfaga de 16 anticuerpos en todas direcciones, que atraviesan enemigos.',
+        en: 'You briefly differentiate into a plasma cell and release a burst of 16 antibodies in every direction that pierce enemies.',
+      },
+    },
     summary: {
-      es: 'Dispara anticuerpos que marcan y neutralizan al enemigo.',
-      en: 'Fires antibodies that tag and neutralize enemies.',
+      es: 'Francotirador de anticuerpos: marca a los enemigos para que todo les haga más daño.',
+      en: 'Antibody sniper: tags enemies so everything hits them harder.',
+    },
+    facts: {
+      es: [
+        'Al activarse, el linfocito B se convierte en célula plasmática: una fábrica que libera unos 2 000 anticuerpos por segundo.',
+        'Los anticuerpos tienen forma de "Y": las puntas se unen al antígeno y el tallo (Fc) avisa a fagocitos y al complemento.',
+        'Opsonización: un microbio cubierto de anticuerpos es mucho más fácil de fagocitar.',
+        'Neutralización: los anticuerpos bloquean las proteínas que el virus usa para entrar en las células.',
+        'Algunos linfocitos B se quedan como células de memoria: la base de las vacunas.',
+      ],
+      en: [
+        'When activated, the B cell becomes a plasma cell: a factory releasing about 2,000 antibodies per second.',
+        'Antibodies are Y-shaped: the tips bind the antigen and the stem (Fc) alerts phagocytes and complement.',
+        'Opsonization: a microbe coated in antibodies is much easier to phagocytose.',
+        'Neutralization: antibodies block the proteins a virus uses to enter cells.',
+        'Some B cells remain as memory cells: the basis of vaccines.',
+      ],
     },
   },
 };

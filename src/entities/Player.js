@@ -122,6 +122,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const oy = Math.sin(base) * 7;
     scene.firePlayerBullet(this.x + ox, this.y + oy, ang, {
       texture: this.cell.weapon.texture || 'granule',
+      opsonize: !!this.cell.weapon.opsonize,
+      neutralize: this.cell.weapon.neutralize,
       speed: this.stats.bulletSpeed,
       damage: this.stats.damage,
       pierce: this.stats.pierce,
@@ -138,7 +140,21 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (!this.skillReady(gt)) return false;
     this.atp -= this.stats.skillCost;
     this.skillReadyAt = gt + this.stats.skillCooldown;
-    if (this.cell.skill.id === 'clonal') {
+    if (this.cell.skill.id === 'volley') {
+      const n = this.cell.skill.count;
+      const off = Math.random();
+      for (let i = 0; i < n; i++) {
+        this.scene.firePlayerBullet(this.x, this.y, off + (i / n) * Math.PI * 2, {
+          texture: 'antibody',
+          speed: this.stats.bulletSpeed * 0.8,
+          damage: this.stats.damage * 1.5,
+          pierce: this.stats.pierce + 2,
+          life: 900,
+          opsonize: true,
+          neutralize: this.cell.weapon.neutralize,
+        });
+      }
+    } else if (this.cell.skill.id === 'clonal') {
       this.scene.spawnClones(this.cell.skill.clones, this.stats.skillDuration);
     } else if (this.cell.skill.id === 'synapse') {
       this.scene.startSynapse(this.aim.x, this.aim.y);
