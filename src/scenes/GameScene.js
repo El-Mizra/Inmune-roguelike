@@ -162,6 +162,7 @@ export class GameScene extends Phaser.Scene {
 
     if (!p.dead) this.handleInput(dt);
     p.tick(this.gt, dt);
+    this.updateSynapse();
 
     for (const e of this.enemies.getChildren().slice()) if (e.active) e.tick(dt);
 
@@ -184,6 +185,7 @@ export class GameScene extends Phaser.Scene {
       my /= len;
     }
     p.setVelocity(mx * p.stats.speed, my * p.stats.speed);
+    if (this.gt < p.dashUntil) p.setVelocity(p.dashVX, p.dashVY);
     if (len > 0.1) {
       this.lastMove.set(mx, my).normalize();
       const w = Math.sin(this.gt * 0.02) * 0.06;
@@ -258,7 +260,7 @@ export class GameScene extends Phaser.Scene {
     const p = this.player;
     const room = this.activeRoom;
     return this.enemies.getChildren().filter((e) => {
-      if (!e.active || e.stealth || e.dying) return false;
+      if (!e.active || e.dying || (e.stealth && !this.player.cell.seesStealth)) return false;
       if (room && e.room !== room) return false;
       return Phaser.Math.Distance.Between(p.x, p.y, e.x, e.y) <= range;
     });
@@ -299,12 +301,13 @@ export class GameScene extends Phaser.Scene {
 
   // ------------------------------------------------------------------
   // Proyectiles
-  firePlayerBullet(x, y, ang, { speed, damage, pierce, life }) {
-    const b = this.playerBullets.get(x, y, 'granule');
+  firePlayerBullet(x, y, ang, { speed, damage, pierce, life, texture = 'granule' }) {
+    const b = this.playerBullets.get(x, y, texture);
     if (!b) return;
     b.enableBody(true, x, y, true, true);
+    b.setTexture(texture);
     b.setDepth(9);
-    b.body.setCircle(2.5, 0.5, 0.5);
+    b.body.setCircle(2.5, b.width / 2 - 2.5, b.height / 2 - 2.5);
     b.setVelocity(Math.cos(ang) * speed, Math.sin(ang) * speed);
     b.damage = damage;
     b.pierce = pierce;
@@ -334,7 +337,9 @@ export class GameScene extends Phaser.Scene {
   onBulletHit(b, e) {
     if (!b.active || !e.active || e.dying || b.hits.has(e)) return;
     b.hits.add(e);
-    const dmg = b.damage * this.player.damageMultiplier(e.def, e.id);
+    let dmg = b.damage * this.player.damageMultiplier(e.def, e.id);
+    // la célula NK ignora el camuflaje por pérdida de MHC-I
+    if (e.stealth && this.player.cell.seesStealth) dmg /= e.dmgTakenMult;
     e.takeDamage(dmg, 'shot');
     if (b.pierce > 0) b.pierce -= 1;
     else this.killBullet(b);
@@ -374,6 +379,39 @@ export class GameScene extends Phaser.Scene {
         p.addAtp(3);
         if (Math.random() < 0.35) this.floatText(e.x, e.y - 8, t('phagocytosed'), '#ecd0ad');
       }
+    }
+  }
+
+  // Célula NK: embestida con sinapsis letal
+  startSynapse(dx, dy) {
+    const p = this.player;
+    const speed = 380;
+    p.dashUntil = this.gt + p.stats.skillDuration;
+    p.dashVX = dx * speed;
+    p.dashVY = dy * speed;
+    p.invulnUntil = Math.max(p.invulnUntil, this.gt + p.stats.skillDuration + 120);
+    p.dashHits = new Set();
+    p.nextGhost = 0;
+    this.floatText(p.x, p.y - 14, this.lang === 'es' ? 'Granzimas' : 'Granzymes', '#c9a0ff');
+  }
+
+  updateSynapse() {
+    const p = this.player;
+    if (!(this.gt < p.dashUntil)) return;
+    if (this.gt >= p.nextGhost) {
+      p.nextGhost = this.gt + 35;
+      const ghost = this.add.image(p.x, p.y, p.texture.key, p.frame.name).setDepth(9).setAlpha(0.5).setTint(0xb48cff);
+      this.tweens.add({ targets: ghost, alpha: 0, duration: 220, onComplete: () => ghost.destroy() });
+    }
+    const base = p.cell.skill.damage;
+    for (const e of this.enemies.getChildren().slice()) {
+      if (!e.active || e.dying || p.dashHits.has(e)) continue;
+      if (Phaser.Math.Distance.Between(p.x, p.y, e.x, e.y) > e.radius + 11) continue;
+      p.dashHits.add(e);
+      let dmg = base * p.damageMultiplier(e.def, e.id);
+      if (e.stealth) dmg /= e.dmgTakenMult;
+      e.takeDamage(dmg, 'synapse');
+      this.burstFx(e.x, e.y, 0xc9a0ff, 6);
     }
   }
 

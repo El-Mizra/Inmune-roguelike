@@ -121,13 +121,64 @@ export const CELLS = {
     },
   },
   nk: {
-    playable: false,
+    playable: true,
     texture: 'nkcell',
     name: { es: 'Célula NK', en: 'NK cell' },
     branch: 'innate',
+    // "falta de lo propio": ve y daña normalmente a los tumores que esconden su MHC-I
+    seesStealth: true,
+    bonus: { infected: 1.0, cancer: 0.5, virus: 0.3 },
+    stats: {
+      maxHp: 5,
+      maxArmor: 3,
+      maxAtp: 100,
+      speed: 100,
+      damage: 2.5,
+      fireRate: 3.2,
+      bulletSpeed: 260,
+      spread: 0.04,
+      range: 140,
+    },
+    weapon: {
+      type: 'projectile',
+      texture: 'perforin',
+      name: { es: 'Perforina y granzimas', en: 'Perforin and granzymes' },
+      desc: {
+        es: 'Disparos de corto alcance: +100% de daño a células infectadas, +50% al cáncer y +30% a virus.',
+        en: 'Short-range shots: +100% damage to infected cells, +50% to cancer and +30% to viruses.',
+      },
+    },
+    skill: {
+      id: 'synapse',
+      short: { es: 'Sinapsis', en: 'Synapse' },
+      cost: 30,
+      cooldown: 5000,
+      duration: 240,
+      radius: 0,
+      damage: 9,
+      name: { es: 'Sinapsis letal', en: 'Lethal synapse' },
+      desc: {
+        es: 'Embiste en la dirección de apuntado, sin recibir daño, y descarga granzimas sobre todo lo que atraviesa. Ve al melanoma camuflado.',
+        en: 'Dashes toward your aim, untouchable, unloading granzymes on everything it passes through. Sees camouflaged melanoma.',
+      },
+    },
     summary: {
-      es: 'Detecta células sin MHC-I: experta contra virus y cáncer.',
-      en: 'Detects cells lacking MHC-I: expert against viruses and cancer.',
+      es: 'Asesina natural, rápida y frágil. Experta contra virus y cáncer.',
+      en: 'A fast, fragile natural killer. Expert against viruses and cancer.',
+    },
+    facts: {
+      es: [
+        'NK significa "natural killer" (asesina natural): mata sin necesidad de haber visto antes al enemigo.',
+        'Revisa las moléculas MHC-I de las células. Si faltan ("falta de lo propio"), las destruye: así detecta tumores y células infectadas que se esconden de los linfocitos T.',
+        'Forma una sinapsis inmunológica con su objetivo y le inyecta perforina (que abre poros) y granzimas (que activan su autodestrucción, la apoptosis).',
+        'Es la primera línea contra virus como el herpes y el citomegalovirus.',
+      ],
+      en: [
+        'NK stands for "natural killer": it kills without having seen the enemy before.',
+        'It checks cells for MHC-I molecules. If they are missing ("missing self") it destroys them: that is how it finds tumors and infected cells hiding from T cells.',
+        'It forms an immunological synapse with its target and injects perforin (which opens pores) and granzymes (which trigger self-destruction, apoptosis).',
+        'It is a first line of defense against viruses such as herpes and cytomegalovirus.',
+      ],
     },
   },
   tcd8: {

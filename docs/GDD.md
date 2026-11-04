@@ -58,10 +58,15 @@ Fin de la partida → resumen + memoria inmunológica ganada
 - **Habilidad, activación M1 (IFN-γ):** una onda de TNF-α empuja y daña. Durante 6 s, +50% de daño y +40% de velocidad de ataque, y recupera 1 de membrana.
 - **Rol:** tanque lento con más integridad (7) y menos membrana (2).
 
+### Célula NK (disponible)
+- **Ataque, perforina y granzimas:** disparos de corto alcance. Hacen +100% de daño a células infectadas, +50% al cáncer y +30% a virus.
+- **Habilidad, sinapsis letal:** embiste sin recibir daño y daña todo lo que atraviesa.
+- **Pasiva, "falta de lo propio":** ve y daña con normalidad al melanoma aunque haya reducido su MHC-I.
+- **Rol:** rápida y frágil; especialista contra virus y cáncer.
+
 ### Próximamente
 | Célula | Estilo | Especialidad realista |
 |---|---|---|
-| Célula NK | Asesina a distancia media | Detecta células **sin MHC-I**: ve al melanoma camuflado |
 | Linfocito T CD8 | Golpes precisos de alto daño | Mata células infectadas por virus antes de que estallen |
 | Linfocito B / célula plasmática | Dispara anticuerpos | Marca (opsoniza) y neutraliza virus y toxinas |
 | Eosinófilo | Gránulos explosivos | Parásitos (zona intestino) |

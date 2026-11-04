@@ -11,7 +11,7 @@ export function buildStats(cellId, upgradeIds) {
   const s = {
     ...cell.stats,
     pierce: 0,
-    bonus: { bacteria: 0, gramPos: 0, gramNeg: 0, fungus: 0, virus: 0, biofilm: 0, cancer: 0 },
+    bonus: { bacteria: 0, gramPos: 0, gramNeg: 0, fungus: 0, virus: 0, biofilm: 0, cancer: 0, infected: 0 },
     fissionMult: 1,
     enemySlow: 1,
     cellShield: 0,
@@ -21,6 +21,7 @@ export function buildStats(cellId, upgradeIds) {
     skillRadius: cell.skill.radius,
     skillDuration: cell.skill.duration,
   };
+  for (const [tag, v] of Object.entries(cell.bonus || {})) s.bonus[tag] += v;
   for (const id of upgradeIds) UPGRADES[id].apply(s, null);
   return s;
 }
@@ -41,6 +42,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setDepth(10);
     this.play(`${this.cell.texture}_idle`);
     this.buffUntil = 0;
+    this.dashUntil = 0;
     this.nextFire = 0;
     this.skillReadyAt = 0;
     this.invulnUntil = 0;
@@ -117,6 +119,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const ox = Math.cos(base) * 7;
     const oy = Math.sin(base) * 7;
     scene.firePlayerBullet(this.x + ox, this.y + oy, ang, {
+      texture: this.cell.weapon.texture || 'granule',
       speed: this.stats.bulletSpeed,
       damage: this.stats.damage,
       pierce: this.stats.pierce,
@@ -133,7 +136,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (!this.skillReady(gt)) return false;
     this.atp -= this.stats.skillCost;
     this.skillReadyAt = gt + this.stats.skillCooldown;
-    if (this.cell.skill.id === 'm1') {
+    if (this.cell.skill.id === 'synapse') {
+      this.scene.startSynapse(this.aim.x, this.aim.y);
+    } else if (this.cell.skill.id === 'm1') {
       this.buffUntil = gt + this.stats.skillDuration;
       this.armor = Math.min(this.stats.maxArmor, this.armor + 1);
       this.scene.cytokinePulse(this.x, this.y, this.stats.skillRadius);

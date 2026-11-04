@@ -231,7 +231,7 @@ export class UIScene extends Phaser.Scene {
     if (!this.touchEnabled) {
       this.skillText.setVisible(true);
       const key = t('spaceKey');
-      this.skillText.setText(`${key} ${p.cell.skill.short} ${ready ? '' : cd > 0 ? `· ${(cd / 1000).toFixed(1)}s` : `· ${s.skillCost} ATP`}`);
+      this.skillText.setText(`${key} ${L(p.cell.skill.short)} ${ready ? '' : cd > 0 ? `· ${(cd / 1000).toFixed(1)}s` : `· ${s.skillCost} ATP`}`);
       this.skillText.setColor(ready ? COLORS.blue : COLORS.textDim);
     } else this.skillText.setVisible(false);
   }
@@ -368,6 +368,15 @@ export class UIScene extends Phaser.Scene {
       g.beginPath();
       g.arc(B.x, B.y, B.r - 4, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - frac), false);
       g.strokePath();
+    }
+    if (p.cell.skill.id === 'synapse') {
+      // icono de embestida: flecha doble
+      g.lineStyle(3, 0xc9a0ff, ready ? 0.95 : 0.4);
+      for (const ox of [-6, 3]) {
+        g.lineBetween(B.x + ox - 6, B.y - 9, B.x + ox + 3, B.y);
+        g.lineBetween(B.x + ox + 3, B.y, B.x + ox - 6, B.y + 9);
+      }
+      return;
     }
     if (p.cell.skill.id === 'm1') {
       // icono de activación: estallido de citocinas
