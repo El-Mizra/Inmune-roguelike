@@ -50,7 +50,7 @@ No hay tests automáticos. Para validar cambios, ejecuta `npm run build` y prueb
 
 ## Estado actual
 
-- **Células jugables:** neutrófilo (proyectiles + NET), macrófago (cuerpo a cuerpo + activación M1), célula NK (perforina + sinapsis; detecta al melanoma camuflado) linfocito T CD8 (granzimas, aprende durante la partida y tiene expansión clonal con aliados) y linfocito B (anticuerpos que opsonizan (+30% de daño recibido) y neutralizan virus; ráfaga de célula plasmática).
+- **Células jugables:** neutrófilo (proyectiles + NET), macrófago (cuerpo a cuerpo + activación M1), célula NK (perforina + sinapsis; detecta al melanoma camuflado), linfocito T CD8 (granzimas, aprende durante la partida y tiene expansión clonal con aliados) y linfocito B (anticuerpos que opsonizan (+30% de daño recibido) y neutralizan virus; ráfaga de célula plasmática).
 - **Zona 1, la piel:** 2 pisos.
   - **Patógenos:** S. aureus, S. pyogenes, P. aeruginosa, Candida y HSV-1.
   - **Jefes:** MRSA y melanoma.
@@ -68,4 +68,4 @@ No hay tests automáticos. Para validar cambios, ejecuta `npm run build` y prueb
 1. Eosinófilo (parásitos, zona intestino).
 2. Más arte: sprites hechos a mano (ya hay música procedural en `sfx.js`, objeto `Music`).
 3. Zona 2, el pulmón: *S. pneumoniae*, influenza y *Aspergillus*; como jefes, tuberculosis (granuloma) y cáncer de pulmón.
-4. Música, y empaquetado con Capacitor para Android.
+4. Empaquetado con Capacitor para Android y publicación (itch.io o GitHub Pages).
