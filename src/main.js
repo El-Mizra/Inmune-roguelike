@@ -26,6 +26,8 @@ function startGame() {
     scale: {
       mode: Phaser.Scale.EXPAND,
       autoCenter: Phaser.Scale.CENTER_BOTH,
+      // tamaño entero del lienzo: evita costuras entre baldosas al escalar
+      autoRound: true,
       width: 960,
       height: 540,
     },
