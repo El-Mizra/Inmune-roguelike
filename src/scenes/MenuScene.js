@@ -48,6 +48,16 @@ export class MenuScene extends Phaser.Scene {
     body(this, W - 14, H - 30, 'v0.1 · prototipo', 20, COLORS.textDim).setOrigin(1, 0);
 
     this.input.once('pointerdown', () => Sfx.unlock());
+    // en celular: pantalla completa y orientación horizontal al primer toque
+    this.input.once('pointerup', () => {
+      if (!Save.isTouch || this.scale.isFullscreen) return;
+      try {
+        this.scale.startFullscreen();
+        screen.orientation?.lock?.('landscape')?.catch?.(() => {});
+      } catch {
+        /* el navegador no lo permite (p. ej. dentro de un iframe) */
+      }
+    });
   }
 
   go(key, data) {

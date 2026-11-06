@@ -181,6 +181,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
     this.hp -= left;
     Sfx.hurt();
+    // vibración háptica en celular
+    try {
+      navigator.vibrate?.(this.hp <= 0 ? 250 : 60);
+    } catch {
+      /* sin vibración */
+    }
     this.scene.cameras.main.shake(120, 0.006);
     this.setTintFill(0xffffff);
     this.scene.time.delayedCall(70, () => {

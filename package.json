@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview --host"
+    "preview": "vite preview --host",
+    "build:single": "vite build --config vite.single.config.js"
   },
   "repository": {
     "type": "git",
@@ -21,7 +22,8 @@
     "phaser": "^3.90.0"
   },
   "devDependencies": {
-    "vite": "^6.4.5"
+    "vite": "^6.4.5",
+    "vite-plugin-singlefile": "^2.2.0"
   },
   "private": true,
   "type": "module"
