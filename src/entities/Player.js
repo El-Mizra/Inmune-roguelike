@@ -72,6 +72,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     let m = 1;
     for (const tag of def.tags) if (this.stats.bonus[tag]) m += this.stats.bonus[tag];
     m += memoryBonus(speciesId);
+    if (this.scene.cheats?.dmg) m *= 10;
     // inmunidad adaptativa: el linfocito T mejora contra lo que ya ha eliminado en esta partida
     if (this.cell.adaptive) m += Math.min(0.4, (this.run.kills[speciesId] || 0) * 0.02);
     return m;
@@ -85,6 +86,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.nextArmorTick = gt + 1100;
     }
     this.addAtp((this.stats.atpRegen * dt) / 1000);
+    if (this.scene.cheats?.atp) this.atp = this.stats.maxAtp;
     this.setAlpha(gt < this.invulnUntil ? (Math.floor(gt / 80) % 2 ? 0.4 : 1) : 1);
     const buffed = this.buffed(gt);
     if (buffed !== this.wasBuffed) {
@@ -170,6 +172,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   hurt(gt, amount) {
+    if (this.scene.cheats?.god) return false;
     if (this.dead || gt < this.invulnUntil) return false;
     this.lastHurt = gt;
     this.invulnUntil = gt + 900;

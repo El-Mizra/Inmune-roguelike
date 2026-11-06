@@ -370,8 +370,25 @@ function drawTiles(scene) {
     px(PAL.fleck, 6, 6, 1, 1);
     px(PAL.fleck, 9, 8, 1, 1);
   });
+  // Extrusión: cada baldosa lleva 1px de borde repetido alrededor (margen 1,
+  // separación 2). Evita las líneas finas entre baldosas ("sangrado") que
+  // aparecen al escalar a tamaños no enteros, sobre todo en celulares.
+  const E = T + 2;
+  const ext = document.createElement('canvas');
+  ext.width = E * n;
+  ext.height = E;
+  const x2 = ext.getContext('2d');
+  x2.imageSmoothingEnabled = false;
+  for (let i = 0; i < n; i++) {
+    const ox = i * E;
+    x2.drawImage(canvas, i * T, 0, T, T, ox + 1, 1, T, T);
+    x2.drawImage(canvas, i * T, 0, T, 1, ox + 1, 0, T, 1);
+    x2.drawImage(canvas, i * T, T - 1, T, 1, ox + 1, T + 1, T, 1);
+    x2.drawImage(ext, ox + 1, 0, 1, E, ox, 0, 1, E);
+    x2.drawImage(ext, ox + T, 0, 1, E, ox + T + 1, 0, 1, E);
+  }
   if (scene.textures.exists('tiles')) scene.textures.remove('tiles');
-  scene.textures.addCanvas('tiles', canvas);
+  scene.textures.addCanvas('tiles', ext);
 }
 
 // Decoración de la dermis (sin colisión): 0 fibroblasto, 1 adipocito,

@@ -61,6 +61,8 @@ No hay tests automáticos. Para validar cambios, ejecuta `npm run build` y prueb
   - NK: eliminar 15 viriones de herpes o células infectadas.
   - T CD8: vencer al MRSA.
   - B: memoria inmunológica nivel 1 contra 2 especies.
+- **Modo de pruebas** (Ajustes → Modo de pruebas): desbloquea todas las células y añade un botón 🧪 (o la tecla T) en la partida. `DebugScene` ofrece invencible, daño x10, ATP infinito, velocidad del juego y de movimiento, curar, eliminar la sala, ir al jefe, siguiente piso y añadir cualquier mejora. Los trucos viven en `run.cheats`.
+- **Build para celular:** `npm run build:single` genera `dist-single/index.html`, el juego completo en un solo archivo.
 - **Arte:** sombras, decoración de la dermis (`decor`), partículas ambientales, viñeta, anillo de lisis y pseudópodo al moverse.
 
 ## Próximos pasos sugeridos

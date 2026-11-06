@@ -66,10 +66,11 @@ export class GameScene extends Phaser.Scene {
     this.queueSkill = false;
     this.lastMove = new Phaser.Math.Vector2(1, 0);
     Controls.reset();
+    this.cheats = this.run.cheats || (this.run.cheats = { god: false, dmg: false, atp: false, speed: 1, move: 1 });
 
     // --- mapa ---
     const map = this.make.tilemap({ data: this.floor.tiles, tileWidth: TILE, tileHeight: TILE });
-    const ts = map.addTilesetImage('tiles', 'tiles', TILE, TILE, 0, 0);
+    const ts = map.addTilesetImage('tiles', 'tiles', TILE, TILE, 1, 2);
     this.layer = map.createLayer(0, ts, 0, 0);
     this.layer.setCollision(SOLID);
     this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
@@ -119,6 +120,7 @@ export class GameScene extends Phaser.Scene {
     cam.startFollow(this.player, true, 0.18, 0.18);
     cam.fadeIn(400, 18, 6, 12);
 
+    this.applySpeed();
     this.aimG = this.add.graphics().setDepth(20);
     this.shadowG = this.add.graphics().setDepth(2);
     this.podG = this.add.graphics().setDepth(9);
@@ -139,7 +141,7 @@ export class GameScene extends Phaser.Scene {
     }).setDepth(15);
 
     // --- entrada (teclado y ratón) ---
-    this.keys = this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,ESC,J,K,E,P');
+    this.keys = this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,ESC,J,K,E,P,T');
     this.input.mouse?.disableContextMenu();
     this.input.on('pointerdown', (p) => {
       if (p.wasTouch) return;
@@ -168,7 +170,7 @@ export class GameScene extends Phaser.Scene {
 
   // ------------------------------------------------------------------
   update(_time, delta) {
-    const dt = Math.min(delta, 50);
+    const dt = Math.min(delta, 50) * this.cheats.speed;
     this.gt += dt;
     this.run.elapsed += dt;
     const p = this.player;
@@ -176,6 +178,11 @@ export class GameScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.keys.ESC) || Phaser.Input.Keyboard.JustDown(this.keys.P) || Controls.pauseQueued) {
       Controls.pauseQueued = false;
       this.openPause();
+      return;
+    }
+    if (Save.settings.debug && (Phaser.Input.Keyboard.JustDown(this.keys.T) || Controls.debugQueued)) {
+      Controls.debugQueued = false;
+      this.openOverlay('Debug');
       return;
     }
 
@@ -205,7 +212,8 @@ export class GameScene extends Phaser.Scene {
       mx /= len;
       my /= len;
     }
-    p.setVelocity(mx * p.stats.speed, my * p.stats.speed);
+    const spd = p.stats.speed * this.cheats.move;
+    p.setVelocity(mx * spd, my * spd);
     if (this.gt < p.dashUntil) p.setVelocity(p.dashVX, p.dashVY);
     if (len > 0.1) {
       this.lastMove.set(mx, my).normalize();
@@ -940,11 +948,57 @@ export class GameScene extends Phaser.Scene {
   }
 
   openPause() {
-    if (this.ending || !this.scene.isActive('Game') || this.scene.isActive('Choice') || this.scene.isActive('Pause')) return;
+    this.openOverlay('Pause');
+  }
+
+  openOverlay(key) {
+    if (this.ending || !this.scene.isActive('Game')) return;
+    if (['Choice', 'Pause', 'Debug'].some((k) => this.scene.isActive(k))) return;
     this.mouseFire = false;
     Controls.reset();
     this.scene.pause();
-    this.scene.launch('Pause');
+    this.scene.launch(key);
+  }
+
+  // ------------------------------------------------------------------
+  // Modo de pruebas
+  applySpeed() {
+    const s = this.cheats.speed;
+    this.physics.world.timeScale = 1 / s;
+    this.time.timeScale = s;
+    this.tweens.timeScale = s;
+  }
+
+  debugHeal() {
+    const p = this.player;
+    p.hp = p.stats.maxHp;
+    p.armor = p.stats.maxArmor;
+    p.atp = p.stats.maxAtp;
+  }
+
+  debugKillRoom() {
+    const r = this.activeRoom;
+    for (const e of this.enemies.getChildren().slice()) {
+      if (e.active && !e.dying && (!r || e.room === r)) e.die();
+    }
+    // salta las oleadas que falten
+    if (r) r.waveIndex = r.waves;
+  }
+
+  debugGoBoss() {
+    const r = this.activeRoom;
+    if (r && r.type !== 'boss') {
+      this.debugKillRoom();
+      r.pending = 0;
+      this.clearRoom(r);
+    }
+    const b = this.floor.boss;
+    this.player.body.reset((b.cx + 0.5) * TILE, (b.cy + 4.5) * TILE);
+  }
+
+  debugNextFloor() {
+    if (this.ending) return;
+    this.nextFloor();
   }
 
   // ------------------------------------------------------------------

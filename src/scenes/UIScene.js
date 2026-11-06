@@ -49,6 +49,13 @@ export class UIScene extends Phaser.Scene {
 
     // botón de pausa
     this.pauseZone = this.add.zone(0, 0, 40, 40).setOrigin(0).setInteractive({ useHandCursor: true });
+    // botón del modo de pruebas (solo si está activado en Ajustes)
+    this.debugZone = this.add.zone(0, 0, 40, 40).setOrigin(0).setInteractive({ useHandCursor: true });
+    this.debugZone.on('pointerdown', () => {
+      Controls.debugQueued = true;
+    });
+    this.debugZone.setVisible(!!Save.settings.debug);
+    if (!Save.settings.debug) this.debugZone.disableInteractive();
     this.pauseZone.on('pointerdown', () => {
       Controls.pauseQueued = true;
     });
@@ -102,6 +109,7 @@ export class UIScene extends Phaser.Scene {
     this.hint.setPosition(W / 2, H - 70);
     this.disc.setPosition(14, 84);
     this.pauseZone.setPosition(W - 154 - 50, 10);
+    this.debugZone.setPosition(W - 154 - 100, 10);
     this.btnAttack = { x: W - 104, y: H - 104, r: 52 };
     this.btnSkill = { x: W - 206, y: H - 62, r: 34 };
   }
@@ -118,7 +126,7 @@ export class UIScene extends Phaser.Scene {
     Sfx.unlock();
     if (!this.gameRunning()) return;
     const W = this.W;
-    if (p.x > this.pauseZone.x - 6 && p.y < 60) return;
+    if (p.x > (Save.settings.debug ? this.debugZone.x : this.pauseZone.x) - 6 && p.y < 60) return;
     if (Phaser.Math.Distance.Between(p.x, p.y, this.btnSkill.x, this.btnSkill.y) < this.btnSkill.r + 10) {
       Controls.skillQueued = true;
       this.skillFlash = 150;
@@ -289,6 +297,17 @@ export class UIScene extends Phaser.Scene {
     g.fillStyle(0xf4d8e0, 1);
     g.fillRect(px + 13, py + 11, 5, 18);
     g.fillRect(px + 22, py + 11, 5, 18);
+    if (Save.settings.debug) {
+      // matraz de laboratorio
+      const dx = this.debugZone.x;
+      const dy = this.debugZone.y;
+      drawPanel(g, dx, dy, 40, 40, { alpha: 0.8, border: 0x8ee0b0 });
+      g.fillStyle(0x8ee0b0, 1);
+      g.fillRect(dx + 17, dy + 9, 6, 9);
+      g.fillTriangle(dx + 11, dy + 31, dx + 29, dy + 31, dx + 20, dy + 15);
+      g.fillStyle(0x2a0f1c, 1);
+      g.fillRect(dx + 15, dy + 7, 10, 3);
+    }
   }
 
   drawBoss() {

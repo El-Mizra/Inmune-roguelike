@@ -22,7 +22,7 @@ export class SettingsScene extends Phaser.Scene {
     else this.add.rectangle(0, 0, W, H, 0x000000, 0.6).setOrigin(0).setInteractive();
 
     const pw = Math.min(W - 30, 640);
-    const ph = 400;
+    const ph = 460;
     const px = W / 2 - pw / 2;
     const py = H / 2 - ph / 2;
     panel(this, px, py, pw, ph);
@@ -56,6 +56,7 @@ export class SettingsScene extends Phaser.Scene {
     body(this, px + 24, py + 178, t(`aimHelp_${s.aim}`), 20, COLORS.textDim, { wordWrap: { width: pw - 48 } });
     row(py + 240, t('sound'), [[true, t('on')], [false, t('off')]], s.sound, (v) => Save.setSetting('sound', v));
 
+    row(py + 350, t('debugMode'), [[true, t('on')], [false, t('off')]], !!s.debug, (v) => Save.setSetting('debug', v));
     body(this, px + 24, py + 280, Save.isTouch ? t('controlsTouch') : t('controlsPc'), 20, COLORS.textDim, {
       wordWrap: { width: pw - 48 },
     });

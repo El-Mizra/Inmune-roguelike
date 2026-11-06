@@ -12,6 +12,7 @@ export const Controls = {
   // pulsación de habilidad (flanco): la escena de juego la consume
   skillQueued: false,
   pauseQueued: false,
+  debugQueued: false,
   reset() {
     this.touchMoveX = 0;
     this.touchMoveY = 0;
@@ -21,5 +22,6 @@ export const Controls = {
     this.touchFire = false;
     this.skillQueued = false;
     this.pauseQueued = false;
+    this.debugQueued = false;
   },
 };

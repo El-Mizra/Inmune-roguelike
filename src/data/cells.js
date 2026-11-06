@@ -337,6 +337,7 @@ export const CELL_ORDER = ['neutrophil', 'macrophage', 'nk', 'tcd8', 'bcell'];
 export function isUnlocked(id) {
   const c = CELLS[id];
   if (!c.playable) return false;
-  if (!c.unlock) return true;
+  // en modo de pruebas todo está desbloqueado
+  if (!c.unlock || Save.settings.debug) return true;
   return c.unlock.check({ ...Save.stats, kills: Save.kills });
 }
