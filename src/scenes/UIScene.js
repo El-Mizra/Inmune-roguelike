@@ -54,8 +54,7 @@ export class UIScene extends Phaser.Scene {
     this.debugZone.on('pointerdown', () => {
       Controls.debugQueued = true;
     });
-    this.debugZone.setVisible(!!Save.settings.debug);
-    if (!Save.settings.debug) this.debugZone.disableInteractive();
+    this.syncDebugZone();
     this.pauseZone.on('pointerdown', () => {
       Controls.pauseQueued = true;
     });
@@ -191,7 +190,17 @@ export class UIScene extends Phaser.Scene {
   }
 
   // ---------------------------------------------------------------
+  syncDebugZone() {
+    const on = !!Save.settings.debug;
+    if (this.debugOn === on) return;
+    this.debugOn = on;
+    this.debugZone.setVisible(on);
+    if (on) this.debugZone.setInteractive({ useHandCursor: true });
+    else this.debugZone.disableInteractive();
+  }
+
   update(_t, dt) {
+    this.syncDebugZone();
     const gs = this.gs;
     if (!gs || !gs.player) return;
     if (!this.gameRunning() && (this.touches.move || this.touches.aim)) {

@@ -153,7 +153,13 @@ export function floatingBackdrop(scene, count = 18) {
 
 // Reinicia una escena de menú cuando cambia el tamaño de la ventana.
 export function restartOnResize(scene, data) {
-  const handler = () => scene.scene.restart(data);
+  const handler = () => {
+    // si la pantalla ya está saliendo (fundido a negro), no la reinicies:
+    // se perdería la navegación que el jugador acaba de pedir
+    const cam = scene.cameras?.main;
+    if (!scene.sys.isActive() || cam?.fadeEffect?.isRunning) return;
+    scene.scene.restart(data);
+  };
   let timer = null;
   const debounced = () => {
     clearTimeout(timer);

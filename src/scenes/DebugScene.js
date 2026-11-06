@@ -58,12 +58,20 @@ export class DebugScene extends Phaser.Scene {
     speedRow(px + 20 + half, t('dbgMoveSpeed'), 'move', [1, 1.5, 2]);
 
     // acciones
-    const aw = (pw - 40) / 4 - 8;
+    const aw = (pw - 40) / 5 - 8;
     [
       [t('dbgHeal'), () => gs.debugHeal()],
       [t('dbgKill'), () => gs.debugKillRoom()],
       [t('dbgBoss'), () => gs.debugGoBoss()],
       [t('dbgNextFloor'), () => gs.debugNextFloor()],
+      [t('dbgAllUpgrades'), () => {
+        for (const id of UPGRADE_IDS) {
+          if (!p.run.upgrades.includes(id)) p.addUpgrade(id);
+          Save.discover(`up_${id}`);
+        }
+        gs.debugHeal();
+        gs.events.emit('toast', `+${UPGRADE_IDS.length} ${t('dbgUpgradesAdded')}`);
+      }],
     ].forEach(([label, fn], i) => {
       button(this, px + 20 + aw / 2 + i * (aw + 10), py + 150, aw, 34, label, () => {
         this.close();
@@ -82,6 +90,7 @@ export class DebugScene extends Phaser.Scene {
       button(this, x, y, uw, 32, `${L(UPGRADES[id].name)}${n ? ` ×${n}` : ''}`, () => {
         p.addUpgrade(id);
         Save.discover(`up_${id}`);
+        gs.events.emit('toast', `+ ${L(UPGRADES[id].name)}`);
         again();
       }, { font: FONT_BODY, size: 18, selected: n > 0 });
     });

@@ -44,10 +44,15 @@ function startGame() {
 
   // En celular, el navegador sale de pantalla completa al cambiar de app.
   // Cualquier toque al volver la reactiva (tiene que ser dentro de un gesto del usuario).
+  let fullscreenBlockedUntil = 0;
+  game.scale.on('fullscreenfailed', () => {
+    fullscreenBlockedUntil = performance.now() + 15000;
+  });
   document.addEventListener(
     'pointerup',
     () => {
       if (!Save.isTouch || game.scale.isFullscreen || !game.scale.fullscreen.available) return;
+      if (performance.now() < fullscreenBlockedUntil) return;
       try {
         game.scale.startFullscreen();
         screen.orientation?.lock?.('landscape')?.catch?.(() => {});
