@@ -109,8 +109,16 @@ export class UIScene extends Phaser.Scene {
     this.disc.setPosition(14, 84);
     this.pauseZone.setPosition(W - 154 - 50, 10);
     this.debugZone.setPosition(W - 154 - 100, 10);
-    this.btnAttack = { x: W - 104, y: H - 104, r: 52 };
-    this.btnSkill = { x: W - 206, y: H - 62, r: 34 };
+    // tamaño de los controles táctiles (Ajustes → Tamaño de controles)
+    const k = Save.settings.stickSize === 'large' ? 1.4 : 1;
+    this.stickSize = Save.settings.stickSize;
+    this.stickR = 50 * k;
+    this.knobR = 22 * k;
+    this.stickHome = { x: 70 + this.stickR, y: H - 60 - this.stickR };
+    const ar = 52 * k;
+    const sr = 34 * k;
+    this.btnAttack = { x: W - 52 - ar, y: H - 52 - ar, r: ar };
+    this.btnSkill = { x: W - 52 - ar * 2 - sr - 16, y: H - 28 - sr, r: sr };
   }
 
   // ---------------------------------------------------------------
@@ -132,7 +140,14 @@ export class UIScene extends Phaser.Scene {
       return;
     }
     if (p.x < W * 0.45) {
-      if (this.touches.move == null) this.touches.move = { id: p.id, bx: p.x, by: p.y, x: p.x, y: p.y };
+      if (this.touches.move == null) {
+        // fijo: el centro del joystick no se mueve; flotante: aparece donde tocas
+        const fixed = Save.settings.stickMode === 'fixed';
+        const bx = fixed ? this.stickHome.x : p.x;
+        const by = fixed ? this.stickHome.y : p.y;
+        this.touches.move = { id: p.id, bx, by, x: p.x, y: p.y };
+        if (fixed) this.onMove(p);
+      }
     } else if (this.touches.aim == null) {
       this.touches.aim = { id: p.id, bx: p.x, by: p.y, x: p.x, y: p.y };
       Controls.touchFire = true;
@@ -148,9 +163,9 @@ export class UIScene extends Phaser.Scene {
       let dx = p.x - m.bx;
       let dy = p.y - m.by;
       const d = Math.hypot(dx, dy);
-      const R = 50;
-      // el stick "persigue" al dedo si se aleja demasiado
-      if (d > R * 1.4) {
+      const R = this.stickR;
+      // en modo flotante, el stick "persigue" al dedo si se aleja demasiado
+      if (Save.settings.stickMode !== 'fixed' && d > R * 1.4) {
         m.bx = p.x - (dx / d) * R * 1.4;
         m.by = p.y - (dy / d) * R * 1.4;
         dx = p.x - m.bx;
@@ -201,6 +216,7 @@ export class UIScene extends Phaser.Scene {
 
   update(_t, dt) {
     this.syncDebugZone();
+    if (this.stickSize !== Save.settings.stickSize) this.layout();
     const gs = this.gs;
     if (!gs || !gs.player) return;
     if (!this.gameRunning() && (this.touches.move || this.touches.aim)) {
@@ -347,24 +363,25 @@ export class UIScene extends Phaser.Scene {
     const p = this.gs.player;
     // stick izquierdo
     const m = this.touches.move;
-    const baseX = m ? m.bx : 120;
-    const baseY = m ? m.by : this.H - 110;
+    const R = this.stickR;
+    const baseX = m ? m.bx : this.stickHome.x;
+    const baseY = m ? m.by : this.stickHome.y;
     g.fillStyle(0xffffff, m ? 0.12 : 0.06);
-    g.fillCircle(baseX, baseY, 50);
+    g.fillCircle(baseX, baseY, R);
     g.lineStyle(2, 0xffffff, m ? 0.3 : 0.15);
-    g.strokeCircle(baseX, baseY, 50);
+    g.strokeCircle(baseX, baseY, R);
     let kx = baseX;
     let ky = baseY;
     if (m) {
       const dx = m.x - m.bx;
       const dy = m.y - m.by;
       const d = Math.hypot(dx, dy);
-      const k = Math.min(1, 50 / Math.max(1, d));
+      const k = Math.min(1, R / Math.max(1, d));
       kx = m.bx + dx * k;
       ky = m.by + dy * k;
     }
     g.fillStyle(0xf4d8e0, m ? 0.55 : 0.25);
-    g.fillCircle(kx, ky, 22);
+    g.fillCircle(kx, ky, this.knobR);
 
     // botón / stick de ataque
     const A = this.btnAttack;

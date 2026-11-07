@@ -22,7 +22,7 @@ export class SettingsScene extends Phaser.Scene {
     else this.add.rectangle(0, 0, W, H, 0x000000, 0.6).setOrigin(0).setInteractive();
 
     const pw = Math.min(W - 30, 640);
-    const ph = 460;
+    const ph = 440;
     const px = W / 2 - pw / 2;
     const py = H / 2 - ph / 2;
     panel(this, px, py, pw, ph);
@@ -41,9 +41,9 @@ export class SettingsScene extends Phaser.Scene {
     };
 
     const s = Save.settings;
-    row(py + 90, t('language'), [['es', 'Español'], ['en', 'English']], s.lang, (v) => Save.setSetting('lang', v));
+    row(py + 80, t('language'), [['es', 'Español'], ['en', 'English']], s.lang, (v) => Save.setSetting('lang', v));
     row(
-      py + 150,
+      py + 130,
       t('aim'),
       [
         ['manual', t('aim_manual')],
@@ -53,13 +53,12 @@ export class SettingsScene extends Phaser.Scene {
       s.aim,
       (v) => Save.setSetting('aim', v),
     );
-    body(this, px + 24, py + 178, t(`aimHelp_${s.aim}`), 20, COLORS.textDim, { wordWrap: { width: pw - 48 } });
-    row(py + 240, t('sound'), [[true, t('on')], [false, t('off')]], s.sound, (v) => Save.setSetting('sound', v));
+    body(this, px + 24, py + 156, t(`aimHelp_${s.aim}`), 20, COLORS.textDim, { wordWrap: { width: pw - 48 } });
+    row(py + 210, t('sound'), [[true, t('on')], [false, t('off')]], s.sound, (v) => Save.setSetting('sound', v));
 
-    row(py + 350, t('debugMode'), [[true, t('on')], [false, t('off')]], !!s.debug, (v) => Save.setSetting('debug', v));
-    body(this, px + 24, py + 280, Save.isTouch ? t('controlsTouch') : t('controlsPc'), 20, COLORS.textDim, {
-      wordWrap: { width: pw - 48 },
-    });
+    row(py + 260, t('stick'), [['float', t('stick_float')], ['fixed', t('stick_fixed')]], s.stickMode, (v) => Save.setSetting('stickMode', v));
+    row(py + 310, t('stickSize'), [['normal', t('size_normal')], ['large', t('size_large')]], s.stickSize, (v) => Save.setSetting('stickSize', v));
+    row(py + 360, t('debugMode'), [[true, t('on')], [false, t('off')]], !!s.debug, (v) => Save.setSetting('debug', v));
 
     const fromMenu = this.from === 'Menu';
     button(this, fromMenu ? W / 2 - 120 : W / 2, py + ph - 36, 220, 42, t('back'), () => this.close(), { size: 11 });

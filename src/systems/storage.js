@@ -14,6 +14,9 @@ function defaults() {
       // 'manual' | 'assist' | 'auto'
       aim: isTouch ? 'auto' : 'manual',
       sound: true,
+      // controles táctiles: 'float' (aparece donde tocas) | 'fixed'; tamaño 'normal' | 'large'
+      stickMode: 'float',
+      stickSize: 'normal',
     },
     codex: {}, // id -> true cuando se ha descubierto
     kills: {}, // id de especie -> muertes acumuladas entre partidas
