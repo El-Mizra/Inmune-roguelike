@@ -4,6 +4,7 @@
 
 export const ENEMIES = {
   saureus: {
+    simpleName: { es: 'Racimo dorado', en: 'Golden cluster' },
     name: 'Staphylococcus aureus',
     category: 'gramPos',
     tags: ['bacteria', 'gramPos'],
@@ -38,6 +39,7 @@ export const ENEMIES = {
     },
   },
   spyogenes: {
+    simpleName: { es: 'Cadena púrpura', en: 'Purple chain' },
     name: 'Streptococcus pyogenes',
     category: 'gramPos',
     tags: ['bacteria', 'gramPos'],
@@ -70,6 +72,7 @@ export const ENEMIES = {
     },
   },
   paeruginosa: {
+    simpleName: { es: 'Bacilo escupidor', en: 'Spitting rod' },
     name: 'Pseudomonas aeruginosa',
     category: 'gramNeg',
     tags: ['bacteria', 'gramNeg'],
@@ -104,6 +107,7 @@ export const ENEMIES = {
     },
   },
   calbicans: {
+    simpleName: { es: 'Levadura', en: 'Yeast' },
     name: 'Candida albicans',
     category: 'fungus',
     tags: ['fungus'],
@@ -138,6 +142,7 @@ export const ENEMIES = {
     },
   },
   hsv1: {
+    simpleName: { es: 'Virus del herpes', en: 'Herpes virus' },
     name: 'Herpes simplex 1 (HSV-1)',
     category: 'virus',
     tags: ['virus'],
@@ -173,6 +178,7 @@ export const ENEMIES = {
     },
   },
   infected: {
+    simpleName: { es: 'Célula infectada', en: 'Infected cell' },
     name: { es: 'Queratinocito infectado', en: 'Infected keratinocyte' },
     category: 'host',
     tags: ['infected', 'virus'],
@@ -227,6 +233,7 @@ export const ENEMIES = {
     hidden: true,
   },
   mrsa: {
+    simpleName: { es: 'Súper racimo resistente', en: 'Resistant super-cluster' },
     name: 'S. aureus MRSA',
     category: 'boss',
     tags: ['bacteria', 'gramPos', 'boss'],
@@ -261,6 +268,7 @@ export const ENEMIES = {
     },
   },
   melanoma: {
+    simpleName: { es: 'Melanoma', en: 'Melanoma' },
     name: { es: 'Melanoma', en: 'Melanoma' },
     category: 'cancer',
     tags: ['cancer', 'boss'],

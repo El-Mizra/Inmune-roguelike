@@ -132,6 +132,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // generación: cada fisión produce dos hijas de la generación siguiente.
     // Se limita para que la población no crezca sin fin dentro de una sala.
     this.gen = opts.gen || 0;
+    // bacteria de práctica del tutorial: quieta, sin dividirse y sin dañar
+    this.dummy = !!opts.dummy;
     this.scheduleFission();
   }
   scheduleFission() {
@@ -139,6 +141,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.nextFission = this.gt + (f.every + Math.random() * f.jitter) * this.scene.player.stats.fissionMult;
   }
   ai_saureus() {
+    if (this.dummy) {
+      this.setVelocity(0, 0);
+      return;
+    }
     const p = this.scene.player;
     const a = this.angleToPlayer() + Math.sin(this.gt * 0.002 + this.phase) * 0.8;
     const s = this.speedNow();

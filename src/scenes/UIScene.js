@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { Controls } from '../systems/controls.js';
 import { Save } from '../systems/storage.js';
-import { t, L } from '../systems/i18n.js';
+import { t, L, N } from '../systems/i18n.js';
 import { ENEMIES } from '../data/enemies.js';
 import { FONT_TITLE, FONT_BODY, COLORS, drawPanel } from '../systems/ui.js';
 import { Sfx } from '../systems/sfx.js';
@@ -47,6 +47,17 @@ export class UIScene extends Phaser.Scene {
     this.discIcon = this.add.image(300, 30, 'saureus').setScale(3);
     this.disc.add([this.discG, this.discTitle, this.discName, this.discBody, this.discIcon]);
 
+    // panel del tutorial
+    this.tutPanel = this.add.container(0, 0).setVisible(false);
+    this.tutG = this.add.graphics();
+    this.tutTitle = this.add.text(14, 10, '', { fontFamily: FONT_TITLE, fontSize: '8px', color: COLORS.gold });
+    this.tutText = this.add.text(14, 26, '', { fontFamily: FONT_BODY, fontSize: '22px', color: COLORS.text, wordWrap: { width: 400 } });
+    this.tutSkip = this.add.text(0, 8, '', { fontFamily: FONT_TITLE, fontSize: '8px', color: COLORS.textDim }).setOrigin(1, 0);
+    this.tutPanel.add([this.tutG, this.tutTitle, this.tutText, this.tutSkip]);
+    this.tutSkipZone = this.add.zone(0, 0, 90, 34).setOrigin(0).setInteractive({ useHandCursor: true });
+    this.tutSkipZone.on('pointerdown', () => this.gs.finishTutorial(true));
+    this.tutSkipZone.disableInteractive();
+
     // botón de pausa
     this.pauseZone = this.add.zone(0, 0, 40, 40).setOrigin(0).setInteractive({ useHandCursor: true });
     // botón del modo de pruebas (solo si está activado en Ajustes)
@@ -71,6 +82,11 @@ export class UIScene extends Phaser.Scene {
     on('banner', this.showBanner);
     on('hint', this.showHint);
     on('toast', this.showToast);
+    on('tutorial', this.showTutorial);
+    on('tutorialEnd', () => {
+      this.tutPanel.setVisible(false);
+      this.tutSkipZone.disableInteractive();
+    });
     on('discover', (id) => {
       this.discoverQueue.push(id);
       if (!this.discBusy) this.nextDiscover();
@@ -134,6 +150,8 @@ export class UIScene extends Phaser.Scene {
     if (!this.gameRunning()) return;
     const W = this.W;
     if (p.x > (Save.settings.debug ? this.debugZone.x : this.pauseZone.x) - 6 && p.y < 60) return;
+    const r = this.tutPanel.visible && this.tutRect;
+    if (r && p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) return;
     if (Phaser.Math.Distance.Between(p.x, p.y, this.btnSkill.x, this.btnSkill.y) < this.btnSkill.r + 10) {
       Controls.skillQueued = true;
       this.skillFlash = 150;
@@ -353,7 +371,7 @@ export class UIScene extends Phaser.Scene {
     g.fillRect(x, y, Math.max(0, (w * b.hp) / b.maxHp), 12);
     g.fillStyle(0xffffff, 0.25);
     g.fillRect(x, y, Math.max(0, (w * b.hp) / b.maxHp), 2);
-    this.bossName.setText(L(ENEMIES[b.id].name));
+    this.bossName.setText(N(ENEMIES[b.id]));
   }
 
   drawTouch(dt) {
@@ -475,6 +493,28 @@ export class UIScene extends Phaser.Scene {
     this.tweens.add({ targets: [this.bannerTitle, this.bannerSub], alpha: 1, duration: 300, hold: 1800, yoyo: true });
   }
 
+  // Panel del tutorial: en la franja libre entre el joystick y los botones
+  showTutorial(text, n, total) {
+    const left = 230;
+    const right = this.W - 320;
+    const w = Math.max(300, Math.min(460, right - left));
+    const cx = right - left >= 300 ? (left + right) / 2 : this.W / 2;
+    this.tutTitle.setText(`${t('tutorial').toUpperCase()} ${n + 1}/${total}`);
+    this.tutSkip.setText(`${t('skip')} ›`);
+    this.tutSkip.x = w - 12;
+    this.tutText.setWordWrapWidth(w - 28);
+    this.tutText.setText(text);
+    const h = 40 + this.tutText.height;
+    this.tutG.clear();
+    drawPanel(this.tutG, 0, 0, w, h, { alpha: 0.92, border: COLORS.accent });
+    const x = cx - w / 2;
+    const y = this.H - 150 - h / 2;
+    this.tutPanel.setPosition(x, y).setVisible(true).setAlpha(0);
+    this.tweens.add({ targets: this.tutPanel, alpha: 1, duration: 250 });
+    this.tutRect = { x, y, w, h };
+    this.tutSkipZone.setPosition(x + w - 96, y).setInteractive({ useHandCursor: true });
+  }
+
   showToast(text) {
     this.toast.setText(text);
     this.tweens.killTweensOf(this.toast);
@@ -499,7 +539,7 @@ export class UIScene extends Phaser.Scene {
     this.discBusy = true;
     const def = ENEMIES[id];
     this.discTitle.setText(t('newPathogen').toUpperCase());
-    this.discName.setText(L(def.name));
+    this.discName.setText(N(def));
     this.discBody.setText(L(def.summary));
     this.discIcon.setTexture(def.texture, 0);
     const h = 54 + this.discBody.height;

@@ -40,10 +40,11 @@ export class ChoiceScene extends Phaser.Scene {
         drawPanel(g, 0, 0, cw, ch, { fill: hover ? 0x3d1829 : COLORS.panel, border: hover ? COLORS.accent : COLORS.border });
       };
       draw(false);
-      const name = body(this, cw / 2, 16, L(u.name), 28, COLORS.gold, { align: 'center', wordWrap: { width: cw - 20 } }).setOrigin(0.5, 0);
-      const eff = body(this, cw / 2, 20 + name.height + 6, L(u.effect), 22, COLORS.green, { align: 'center', wordWrap: { width: cw - 20 } }).setOrigin(0.5, 0);
-      const fact = body(this, 14, eff.y + eff.height + 14, L(u.fact), 20, COLORS.text, { wordWrap: { width: cw - 28 } });
-      c.add([g, name, eff, fact]);
+      // lo primero que se lee es qué hace; la molécula y el dato real van debajo
+      const eff = body(this, cw / 2, 16, L(u.effect), 28, COLORS.gold, { align: 'center', wordWrap: { width: cw - 20 } }).setOrigin(0.5, 0);
+      const name = body(this, cw / 2, eff.y + eff.height + 10, L(u.name), 22, COLORS.green, { align: 'center', wordWrap: { width: cw - 20 } }).setOrigin(0.5, 0);
+      const fact = body(this, 14, name.y + name.height + 12, L(u.fact), 18, COLORS.textDim, { wordWrap: { width: cw - 28 } });
+      c.add([g, eff, name, fact]);
       const z = this.add.zone(0, 0, cw, ch).setOrigin(0).setInteractive({ useHandCursor: true });
       c.add(z);
       z.on('pointerover', () => draw(true));

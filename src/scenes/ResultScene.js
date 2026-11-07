@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { t, L } from '../systems/i18n.js';
+import { t, L, N } from '../systems/i18n.js';
 import { ENEMIES } from '../data/enemies.js';
 import { CELLS } from '../data/cells.js';
 import { MEMORY_TIERS } from '../systems/storage.js';
@@ -47,7 +47,7 @@ export class ResultScene extends Phaser.Scene {
       const x = px + 20 + (i % 2) * colW;
       const y = py + 50 + Math.floor(i / 2) * 34;
       this.add.image(x + 12, y + 12, def.texture, 0).setScale(def.boss ? 0.6 : 2);
-      body(this, x + 32, y, `${L(def.name)} ×${k.n}`, 22, COLORS.text);
+      body(this, x + 32, y, `${N(def)} ×${k.n}`, 22, COLORS.text);
     });
 
     // memoria inmunológica ganada
@@ -60,7 +60,7 @@ export class ResultScene extends Phaser.Scene {
     }
     for (const g of gains.slice(0, 4)) {
       const bonus = Math.round(MEMORY_TIERS[g.after - 1].bonus * 100);
-      body(this, px + 20, y, `${L(ENEMIES[g.id].name)}: ${t('tier')} ${g.after} (+${bonus}% ${t('dmgVs')})`, 20, COLORS.green);
+      body(this, px + 20, y, `${N(ENEMIES[g.id])}: ${t('tier')} ${g.after} (+${bonus}% ${t('dmgVs')})`, 20, COLORS.green);
       y += 24;
     }
 

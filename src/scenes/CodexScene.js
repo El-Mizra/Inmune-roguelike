@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { t, L } from '../systems/i18n.js';
+import { t, L, N } from '../systems/i18n.js';
 import { Save, memoryTier, MEMORY_TIERS } from '../systems/storage.js';
 import { ENEMIES, CODEX_PATHOGENS } from '../data/enemies.js';
 import { CELLS, CELL_ORDER } from '../data/cells.js';
@@ -165,11 +165,15 @@ export class CodexScene extends Phaser.Scene {
         return {
           id,
           found: Save.isDiscovered(id),
-          label: L(d.name),
-          italic: typeof d.name === 'string',
+          label: N(d),
+          italic: Save.settings.names === 'science' && typeof d.name === 'string',
           icon: d.texture,
           big: d.boss,
-          sub: t(CATEGORY_KEY[d.category] || 'boss') + (d.boss ? ` · ${t('boss')}` : ''),
+          // con nombres sencillos, el nombre científico aparece debajo
+          sub:
+            (Save.settings.names !== 'science' && d.simpleName && L(d.simpleName) !== L(d.name) ? `${L(d.name)} · ` : '') +
+            t(CATEGORY_KEY[d.category] || 'boss') +
+            (d.boss ? ` · ${t('boss')}` : ''),
           summary: L(d.summary),
           facts: L(d.facts),
           tip: L(d.tip),

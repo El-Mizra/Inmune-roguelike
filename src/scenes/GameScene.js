@@ -8,7 +8,7 @@ import { ENEMIES, FLOOR_POOLS, FLOOR_BOSSES, CODEX_PATHOGENS } from '../data/ene
 import { UPGRADES, UPGRADE_IDS } from '../data/upgrades.js';
 import { Controls } from '../systems/controls.js';
 import { Save, memoryTier } from '../systems/storage.js';
-import { t, lang, L } from '../systems/i18n.js';
+import { t, lang, N } from '../systems/i18n.js';
 import { Sfx, Music } from '../systems/sfx.js';
 import { PAL } from '../gfx/sprites.js';
 
@@ -87,6 +87,8 @@ export class GameScene extends Phaser.Scene {
     this.player = new Player(this, (s.cx + 0.5) * TILE, (s.cy + 0.5) * TILE, this.run);
     s.visited = true;
     s.cleared = true;
+    // tutorial en la primera partida (se puede saltar)
+    this.tut = this.floorIndex === 0 && !Save.tutorialDone ? { step: -1, x: this.player.x, y: this.player.y } : null;
     for (const id of s.links) this.floor.rooms[id].known = true;
 
     // --- colisiones ---
@@ -107,7 +109,7 @@ export class GameScene extends Phaser.Scene {
       this.killBullet(b);
     });
     this.physics.add.overlap(this.player, this.enemies, (p, e) => {
-      if (e.active && e.def.contactDamage) p.hurt(this.gt, e.def.contactDamage);
+      if (e.active && e.def.contactDamage && !e.dummy) p.hurt(this.gt, e.def.contactDamage);
     });
     this.physics.add.overlap(this.player, this.pickups, (_p, item) => this.collect(item));
 
@@ -164,7 +166,8 @@ export class GameScene extends Phaser.Scene {
     else this.scene.get('UI').events.emit('floorchanged');
     this.time.delayedCall(250, () => {
       this.events.emit('banner', `${t('zone')} 1-${this.floorIndex + 1}`, t('zone1'));
-      if (this.floorIndex === 0) this.events.emit('hint', Save.isTouch ? t('controlsTouch') : t('controlsPc'));
+      if (this.tut) this.time.delayedCall(2400, () => this.setTutStep(0));
+      else if (this.floorIndex === 0) this.events.emit('hint', Save.isTouch ? t('controlsTouch') : t('controlsPc'));
     });
   }
 
@@ -200,6 +203,7 @@ export class GameScene extends Phaser.Scene {
     this.updatePickups(dt);
     this.drawShadows();
     this.updateRooms();
+    this.updateTutorial();
   }
 
   handleInput() {
@@ -829,7 +833,7 @@ export class GameScene extends Phaser.Scene {
     Sfx.boss();
     Music.play('boss');
     const id = FLOOR_BOSSES[Math.min(this.floorIndex, FLOOR_BOSSES.length - 1)];
-    this.events.emit('banner', t('bossIncoming'), L(ENEMIES[id].name));
+    this.events.emit('banner', t('bossIncoming'), N(ENEMIES[id]));
     this.cameras.main.shake(400, 0.004);
     const x = (room.cx + 0.5) * TILE;
     const y = (room.cy - 2 + 0.5) * TILE;
@@ -945,6 +949,45 @@ export class GameScene extends Phaser.Scene {
         this.scene.resume('Game');
       },
     });
+  }
+
+  // ------------------------------------------------------------------
+  // Tutorial: moverse → atacar → habilidad → salir de la sala
+  setTutStep(n) {
+    const tut = this.tut;
+    if (!tut || tut.done || this.ending) return;
+    tut.step = n;
+    const keys = ['move', 'attack', 'skill', 'rooms'];
+    const k = keys[n];
+    const dev = Save.isTouch ? 'touch' : 'pc';
+    const text = n === 3 ? t('tut_rooms') : t(`tut_${k}_${dev}`);
+    if (n === 1) {
+      const s = this.floor.start;
+      tut.dummy = this.spawnEnemy('saureus', (s.cx + 3.5) * TILE, (s.cy + 0.5) * TILE, s, { dummy: true, noReward: true });
+    }
+    if (n === 2) tut.skillAt = this.player.skillReadyAt;
+    Sfx.ui();
+    this.events.emit('tutorial', text, n, keys.length);
+  }
+
+  updateTutorial() {
+    const tut = this.tut;
+    if (!tut || tut.done || tut.step < 0) return;
+    const p = this.player;
+    if (tut.step === 0 && Phaser.Math.Distance.Between(p.x, p.y, tut.x, tut.y) > 48) this.setTutStep(1);
+    else if (tut.step === 1 && tut.dummy && !tut.dummy.active) this.setTutStep(2);
+    else if (tut.step === 2 && p.skillReadyAt !== tut.skillAt) this.setTutStep(3);
+    else if (tut.step === 3 && this.currentRoom !== this.floor.start) this.finishTutorial(false);
+  }
+
+  finishTutorial(skipped) {
+    const tut = this.tut;
+    if (!tut || tut.done) return;
+    tut.done = true;
+    Save.setTutorialDone();
+    if (tut.dummy && tut.dummy.active) tut.dummy.die(true);
+    this.events.emit('tutorialEnd');
+    if (!skipped) this.events.emit('toast', t('tutDone'));
   }
 
   openPause() {

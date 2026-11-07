@@ -62,6 +62,12 @@ No hay tests automáticos. Para validar cambios, ejecuta `npm run build` y prueb
   - T CD8: vencer al MRSA.
   - B: memoria inmunológica nivel 1 contra 2 especies.
 - **Modo de pruebas** (Ajustes → Modo de pruebas): desbloquea todas las células y añade un botón 🧪 (o la tecla T) en la partida. `DebugScene` ofrece invencible, daño x10, ATP infinito, velocidad del juego y de movimiento, curar, eliminar la sala, ir al jefe, siguiente piso y añadir cualquier mejora. Los trucos viven en `run.cheats`.
+- **Accesibilidad para todo público:**
+  - Nombres sencillos de patógenos por defecto (`simpleName` en `enemies.js`; usa `N(def)` de `i18n.js` para mostrarlos). En Ajustes → Nombres se cambia a científicos.
+  - `t()` usa la variante `<clave>_simple` si existe.
+  - Tutorial de 4 pasos en la primera partida (`setTutStep`/`updateTutorial` en `GameScene`, panel en `UIScene`; se guarda con `Save.tutorialDone`).
+  - Las cartas de mejora muestran primero el efecto.
+- **Controles táctiles:** joystick fijo o flotante y tamaño normal o grande (Ajustes).
 - **Build para celular:** `npm run build:single` genera `dist-single/index.html`, el juego completo en un solo archivo.
 - **Arte:** sombras, decoración de la dermis (`decor`), partículas ambientales, viñeta, anillo de lisis y pseudópodo al moverse.
 

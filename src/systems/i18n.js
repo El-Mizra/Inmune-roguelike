@@ -80,6 +80,20 @@ const STR = {
     spaceKey: '[Espacio]',
     phagocytosed: '¡Fagocitado!',
     lockedCell: 'Bloqueada',
+    names: 'Nombres',
+    names_simple_label: 'Sencillos',
+    names_science_label: 'Científicos',
+    camouflage_simple: '¡Se camufla! Difícil de ver',
+    tutorial: 'Tutorial',
+    skip: 'Saltar',
+    tutDone: '¡Listo! Buena suerte',
+    tut_move_touch: 'Usa el joystick de la izquierda para moverte.',
+    tut_move_pc: 'Muévete con WASD o las flechas.',
+    tut_attack_touch: 'Mantén pulsado el lado derecho de la pantalla para atacar a la bacteria de práctica.',
+    tut_attack_pc: 'Mantén el clic izquierdo (o la tecla J) para atacar a la bacteria de práctica.',
+    tut_skill_touch: 'Toca el botón redondo pequeño, junto al de ataque, para usar tu habilidad especial.',
+    tut_skill_pc: 'Pulsa Espacio (o clic derecho) para usar tu habilidad especial.',
+    tut_rooms: 'Al entrar en una sala, sus puertas se cierran hasta que eliminas a todos los microbios. ¡Sal por un pasillo para empezar!',
     debugMode: 'Modo de pruebas',
     dbgGod: 'Invencible',
     dbgDmg: 'Daño x10',
@@ -188,6 +202,20 @@ const STR = {
     spaceKey: '[Space]',
     phagocytosed: 'Engulfed!',
     lockedCell: 'Locked',
+    names: 'Names',
+    names_simple_label: 'Simple',
+    names_science_label: 'Scientific',
+    camouflage_simple: 'Camouflaged! Hard to see',
+    tutorial: 'Tutorial',
+    skip: 'Skip',
+    tutDone: 'All set! Good luck',
+    tut_move_touch: 'Use the left joystick to move.',
+    tut_move_pc: 'Move with WASD or the arrow keys.',
+    tut_attack_touch: 'Hold the right side of the screen to attack the practice bacterium.',
+    tut_attack_pc: 'Hold left click (or J) to attack the practice bacterium.',
+    tut_skill_touch: 'Tap the small round button next to the attack button to use your special skill.',
+    tut_skill_pc: 'Press Space (or right click) to use your special skill.',
+    tut_rooms: 'When you enter a room, its doors lock until you clear every microbe. Leave through a corridor to begin!',
     debugMode: 'Test mode',
     dbgGod: 'Invincible',
     dbgDmg: 'Damage x10',
@@ -227,7 +255,18 @@ export function lang() {
 
 export function t(key) {
   const l = lang();
+  // con nombres sencillos, usa la variante "_simple" del texto si existe
+  if (Save.settings.names !== 'science') {
+    const simple = STR[l][`${key}_simple`];
+    if (simple) return simple;
+  }
   return STR[l][key] ?? STR.es[key] ?? key;
+}
+
+// Nombre visible de un patógeno: sencillo por defecto, científico si se elige en Ajustes.
+export function N(def) {
+  if (Save.settings.names !== 'science' && def.simpleName) return L(def.simpleName);
+  return L(def.name);
 }
 
 // Para objetos de contenido { es, en }.

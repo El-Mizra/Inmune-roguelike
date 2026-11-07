@@ -16,11 +16,14 @@ function defaults() {
       sound: true,
       // controles táctiles: 'float' (aparece donde tocas) | 'fixed'; tamaño 'normal' | 'large'
       stickMode: 'float',
+      // nombres de patógenos: 'simple' (Racimo dorado) | 'science' (Staphylococcus aureus)
+      names: 'simple',
       stickSize: 'normal',
     },
     codex: {}, // id -> true cuando se ha descubierto
     kills: {}, // id de especie -> muertes acumuladas entre partidas
     runs: 0,
+    tutorialDone: false,
     wins: 0,
   };
 }
@@ -90,6 +93,13 @@ export const Save = {
     const settings = data.settings;
     data = defaults();
     data.settings = settings;
+    save();
+  },
+  get tutorialDone() {
+    return !!data.tutorialDone;
+  },
+  setTutorialDone() {
+    data.tutorialDone = true;
     save();
   },
   endRun(won) {
