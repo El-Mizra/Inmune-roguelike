@@ -23,6 +23,20 @@ export const PAL = {
   neuGranule: '#c76a9a',
 };
 
+// Paleta del intestino: mucosa anaranjada y vellosidades
+export const GUT = {
+  void: '#12060c',
+  floorA: '#3d1c1a',
+  floorB: '#45201d',
+  floorC: '#55291f',
+  fleck: '#6e3a2a',
+  fleck2: '#2e1412',
+  wallTop: '#c97a56',
+  wallTop2: '#eaa880',
+  wallFace: '#954c36',
+  wallFace2: '#743828',
+};
+
 function wob(seed, amp = 0.08, freq = 5) {
   return (a) => 1 + Math.sin(a * freq + seed) * amp + Math.sin(a * (freq + 2) + seed * 2.3) * amp * 0.5;
 }
@@ -228,6 +242,110 @@ function drawTumorNode(p, f) {
   p.outline('#0a0406');
 }
 
+// ---------- Zona 2: intestino ----------
+
+// Gram − → rosa/rojo
+const GNEG = ['#7a2238', '#b8405a', '#e57a90', '#ffd0da'];
+
+function drawSalmonella(p, f) {
+  p.blob(8, 5, 5, GNEG, null, 2.6);
+  // flagelos perítricos (alrededor de todo el cuerpo)
+  const w = f ? 1 : -1;
+  for (const [x, y, dx, dy] of [[3, 3, -2, -2], [3, 7, -2, 2], [8, 1, w, -1], [8, 9, -w, 1], [13, 3, 2, -2], [13, 7, 2, 2]]) {
+    p.set(x + dx, y + dy, '#f0a0b0');
+  }
+  p.outline(PAL.outline);
+}
+
+function drawEcoli(p, f) {
+  p.blob(6, 4, 4, ['#7a3a22', '#b8653a', '#e59a6a', '#ffe0c8'], null, 2.3);
+  // fimbrias (pili) para adherirse
+  const pts = f ? [[1, 2], [11, 2], [3, 7], [9, 7]] : [[1, 4], [11, 4], [5, 0], [7, 7]];
+  for (const [x, y] of pts) p.set(x, y, '#e59a6a');
+  p.outline(PAL.outline);
+}
+
+function drawRotavirus(p, f) {
+  // rueda: cápside de triple capa con "radios"
+  p.disc(5.5, 5.5, 4.6, '#2a6a5e');
+  p.disc(5.5, 5.5, 3.4, '#5ab0a0');
+  p.disc(5.5, 5.5, 1.6, '#c8f0e8');
+  const a0 = f ? 0.4 : 0;
+  for (let i = 0; i < 6; i++) {
+    const a = a0 + (i / 6) * Math.PI * 2;
+    p.set(5.5 + Math.cos(a) * 4.6, 5.5 + Math.sin(a) * 4.6, '#c8f0e8');
+  }
+  p.outline(PAL.outline);
+}
+
+const GIARDIA = ['#3e5e6e', '#6a92a4', '#a8cad8', '#e8f8ff'];
+// Giardia vista de frente: "cara" con dos núcleos y disco adhesivo, flagelos hacia atrás
+function drawGiardiaShape(p, f, s, cx, cy) {
+  p.blob(cx, cy, 5.4 * s, GIARDIA, (a) => 1 + (Math.sin(a) > 0 ? -0.18 * Math.sin(a) : 0), 6.2 * s);
+  p.disc(cx - 2 * s, cy - 1.5 * s, 1.3 * s, '#2a3a5a');
+  p.disc(cx + 2 * s, cy - 1.5 * s, 1.3 * s, '#2a3a5a');
+  p.ellipse(cx, cy - 3 * s, 3.5 * s, 1.4 * s, '#c8e4ee');
+  const w = f ? 1 : -1;
+  for (let i = 0; i < 4; i++) {
+    const x0 = cx + (i - 1.5) * 1.6 * s;
+    p.line(x0, cy + 5.5 * s, x0 + w * s * (i % 2 ? 1 : -1), cy + 8.5 * s, '#a8cad8');
+  }
+}
+
+function drawGiardia(p, f) {
+  drawGiardiaShape(p, f, 1, 7, 6.5);
+  p.outline(PAL.outline);
+}
+
+function drawGiardiaBoss(p, f) {
+  drawGiardiaShape(p, f, 3, 21, 18);
+  p.outline(PAL.outline);
+}
+
+// Gram + → violeta; espora subterminal (forma de "palillo de tambor")
+const CDIFF = ['#3d2a5c', '#5e4290', '#8a6ac0', '#c0a8f0'];
+function drawCdiff(p, f) {
+  const R = rng(321);
+  const rods = [
+    [14, 20, 0.5],
+    [30, 16, -0.4],
+    [24, 32, 0.2],
+  ];
+  for (const [x, y, a] of rods) {
+    for (let i = -8; i <= 8; i++) p.disc(x + Math.cos(a) * i, y + Math.sin(a) * i + (f ? Math.sin(i) * 0.4 : 0), 3.6, CDIFF[1]);
+    p.disc(x + Math.cos(a) * 9, y + Math.sin(a) * 9, 4.6, CDIFF[2]);
+    p.disc(x + Math.cos(a) * 9, y + Math.sin(a) * 9, 2.4, '#e8e0c0');
+  }
+  p.speckle('#8ac04a', 16, R);
+  p.outline(PAL.outline);
+}
+
+function drawCdiffSpore(p) {
+  p.ellipse(20, 20, 16, 13, '#4a4030');
+  p.ellipse(20, 20, 13.5, 10.5, '#7a6a48');
+  p.ellipse(19, 18, 9, 6.5, '#b0a070');
+  p.ellipse(17, 16, 4, 2.5, '#e0d8b0');
+  p.outline(PAL.outline);
+}
+
+function drawEnterocyte(p, infected, f) {
+  const R = rng(infected ? 88 : 44);
+  if (!infected) {
+    // célula columnar con "borde en cepillo" (microvellosidades) arriba
+    p.rect(3, 3, 10, 11, '#d98a6a');
+    p.rect(4, 4, 8, 9, '#f0b090');
+    for (let x = 3; x < 13; x += 2) p.set(x, 2, '#ffd0b0');
+    p.disc(8, 11, 1.8, '#5a3348');
+  } else {
+    const k = f ? 0.5 : 0;
+    p.rect(2, 2 - k, 13, 13 + k, '#8a3a6a');
+    p.rect(3, 3 - k, 11, 11 + k, '#b05a8a');
+    p.speckle('#7ae0d0', 8, R);
+    p.disc(8, 11, 1.8, '#2a1036');
+  }
+  p.outline(PAL.outline);
+}
+
 // ---------- Proyectiles, objetos y efectos ----------
 
 function orb(pal, r = 2.2, size = 6) {
@@ -313,7 +431,7 @@ function drawIconAtp(p) {
 
 // ---------- Tileset del tejido ----------
 // 0 vacío · 1 muro (parte superior) · 2 muro (cara frontal) · 3-6 suelo
-function drawTiles(scene) {
+function drawTiles(scene, key, P, style) {
   const T = 16;
   const n = 7;
   const canvas = document.createElement('canvas');
@@ -331,44 +449,58 @@ function drawTiles(scene) {
     ctx.fillStyle = c;
     ctx.fillRect(x, y, w, h);
   };
-  paint(0, () => px(PAL.void, 0, 0, T, T));
-  // muro: fibras de colágeno vistas desde arriba
+  paint(0, () => px(P.void, 0, 0, T, T));
+  // muro visto desde arriba: fibras de colágeno (piel) o vellosidades (intestino)
   paint(1, () => {
-    px(PAL.wallTop, 0, 0, T, T);
-    for (let y = 1; y < T; y += 3) {
-      const off = Math.floor(R() * 4);
-      px(PAL.wallTop2, off, y, T - off - 2, 1);
+    px(P.wallTop, 0, 0, T, T);
+    if (style === 'gut') {
+      for (let x = 1; x < T; x += 5) {
+        px(P.wallTop2, x, 2, 3, 11);
+        px(P.wallTop2, x + 1, 1, 1, 1);
+        px(P.wallFace2, x + 1, 4, 1, 7);
+      }
+    } else {
+      for (let y = 1; y < T; y += 3) {
+        const off = Math.floor(R() * 4);
+        px(P.wallTop2, off, y, T - off - 2, 1);
+      }
     }
-    px(PAL.wallFace, 0, T - 1, T, 1);
+    px(P.wallFace, 0, T - 1, T, 1);
   });
   // cara frontal del muro
   paint(2, () => {
-    px(PAL.wallFace, 0, 0, T, T);
-    px(PAL.wallTop, 0, 0, T, 3);
-    px(PAL.wallTop2, 0, 0, T, 1);
-    for (let x = 1; x < T; x += 4) px(PAL.wallFace2, x, 5, 2, 9);
-    px('#3a1220', 0, T - 2, T, 2);
+    px(P.wallFace, 0, 0, T, T);
+    px(P.wallTop, 0, 0, T, 3);
+    px(P.wallTop2, 0, 0, T, 1);
+    for (let x = 1; x < T; x += 4) px(P.wallFace2, x, 5, 2, 9);
+    px(style === 'gut' ? '#3a1810' : '#3a1220', 0, T - 2, T, 2);
   });
   const floor = (base, specks) => () => {
     px(base, 0, 0, T, T);
-    for (let i = 0; i < specks; i++) px(R() > 0.5 ? PAL.fleck : PAL.fleck2, Math.floor(R() * T), Math.floor(R() * T));
+    for (let i = 0; i < specks; i++) px(R() > 0.5 ? P.fleck : P.fleck2, Math.floor(R() * T), Math.floor(R() * T));
   };
-  paint(3, floor(PAL.floorA, 5));
-  paint(4, floor(PAL.floorB, 7));
-  // suelo con fibroblasto alargado
+  paint(3, floor(P.floorA, 5));
+  paint(4, floor(P.floorB, 7));
+  // suelo con un detalle: fibroblasto (piel) o bacteria de la microbiota (intestino)
   paint(5, () => {
-    floor(PAL.floorA, 3)();
-    px(PAL.floorC, 3, 7, 9, 2);
-    px(PAL.fleck, 5, 7, 3, 2);
-    px('#7b4060', 6, 7, 2, 1);
+    floor(P.floorA, 3)();
+    if (style === 'gut') {
+      px('#4f7a5a', 4, 7, 5, 2);
+      px('#6aa078', 5, 7, 3, 1);
+      px('#4f6a8a', 10, 10, 2, 2);
+    } else {
+      px(P.floorC, 3, 7, 9, 2);
+      px(P.fleck, 5, 7, 3, 2);
+      px('#7b4060', 6, 7, 2, 1);
+    }
   });
   // suelo con una mancha de matriz extracelular más densa
   paint(6, () => {
-    floor(PAL.floorB, 3)();
-    px(PAL.floorC, 4, 5, 7, 5);
-    px(PAL.floorC, 5, 4, 5, 7);
-    px(PAL.fleck, 6, 6, 1, 1);
-    px(PAL.fleck, 9, 8, 1, 1);
+    floor(P.floorB, 3)();
+    px(P.floorC, 4, 5, 7, 5);
+    px(P.floorC, 5, 4, 5, 7);
+    px(P.fleck, 6, 6, 1, 1);
+    px(P.fleck, 9, 8, 1, 1);
   });
   // Extrusión: cada baldosa lleva 1px de borde repetido alrededor (margen 1,
   // separación 2). Evita las líneas finas entre baldosas ("sangrado") que
@@ -387,8 +519,8 @@ function drawTiles(scene) {
     x2.drawImage(ext, ox + 1, 0, 1, E, ox, 0, 1, E);
     x2.drawImage(ext, ox + T, 0, 1, E, ox + T + 1, 0, 1, E);
   }
-  if (scene.textures.exists('tiles')) scene.textures.remove('tiles');
-  scene.textures.addCanvas('tiles', ext);
+  if (scene.textures.exists(key)) scene.textures.remove(key);
+  scene.textures.addCanvas(key, ext);
 }
 
 // Decoración de la dermis (sin colisión): 0 fibroblasto, 1 adipocito,
@@ -424,6 +556,34 @@ function drawDecor(p, f) {
     p.disc(8, 8, 4.5, '#7a4a8a');
     p.speckle('#c48ad6', 10, R);
     p.disc(8, 8, 1.5, '#3e2050');
+  } else if (f === 6) {
+    // punta de una vellosidad intestinal, con su capilar
+    p.disc(8, 8, 5.5, '#b86a4e');
+    p.disc(8, 8, 4.2, '#d98a66');
+    p.line(8, 4, 8, 12, '#8a2a2a');
+  } else if (f === 7) {
+    // célula caliciforme: copa llena de moco
+    p.ellipse(8, 9, 4, 5.5, '#8a6a7a');
+    p.ellipse(8, 7, 3, 3.5, '#d8d0e8');
+    p.disc(8, 13, 1.4, '#4e2a44');
+  } else if (f === 8) {
+    // microbiota "amiga": bacterias beneficiosas (no se atacan)
+    p.ellipse(5, 6, 3, 1.4, '#5a9a6a');
+    p.ellipse(10, 10, 3, 1.4, '#4a7a9a');
+    p.ellipse(11, 4, 2.4, 1.2, '#6aa078');
+  } else if (f === 9) {
+    // gota de moco
+    p.disc(8, 9, 5, '#7a5a5a');
+    p.disc(7, 8, 3.5, '#a08080');
+    p.set(6, 6, '#e0d0d0');
+  } else if (f === 10) {
+    // célula de Paneth: gránulos con péptidos antimicrobianos
+    p.disc(8, 8, 4.5, '#8a4a3a');
+    p.speckle('#ff6a5a', 7, R);
+    p.disc(8, 10, 1.4, '#3e2050');
+  } else if (f === 11) {
+    // placa de Peyer: grupo de linfocitos de la pared intestinal
+    for (const [x, y] of [[5, 6], [9, 5], [7, 9], [11, 9], [5, 11]]) p.disc(x, y, 1.8, '#4b62a3');
   } else {
     // terminación nerviosa libre
     p.line(0, 12, 6, 8, '#d0a070');
@@ -451,7 +611,7 @@ function drawVignette(scene) {
 }
 
 export function generateTextures(scene) {
-  makeTexture(scene, 'decor', 16, 16, 6, drawDecor);
+  makeTexture(scene, 'decor', 16, 16, 12, drawDecor);
   makeTexture(scene, 'shadow', 12, 5, 1, (p) => p.ellipse(6, 2.5, 6, 2.5, '#000000'));
   drawVignette(scene);
   makeTexture(scene, 'neutrophil', 16, 16, 2, drawNeutrophil);
@@ -479,6 +639,17 @@ export function generateTextures(scene) {
   makeTexture(scene, 'kera', 16, 16, 1, (p) => drawKeratinocyte(p, false, 0));
   makeTexture(scene, 'kera_infected', 17, 17, 2, (p, f) => drawKeratinocyte(p, true, f));
   makeTexture(scene, 'mrsa', 48, 48, 2, drawMRSA);
+  makeTexture(scene, 'salmonella', 17, 11, 2, drawSalmonella);
+  makeTexture(scene, 'ecoli', 13, 9, 2, drawEcoli);
+  makeTexture(scene, 'rotavirus', 11, 11, 2, drawRotavirus);
+  makeTexture(scene, 'giardia', 14, 16, 2, drawGiardia);
+  makeTexture(scene, 'giardiaboss', 42, 46, 2, drawGiardiaBoss);
+  makeTexture(scene, 'cdiff', 48, 48, 2, drawCdiff);
+  makeTexture(scene, 'cdiff_spore', 40, 40, 1, drawCdiffSpore);
+  makeTexture(scene, 'entero', 16, 16, 1, (p) => drawEnterocyte(p, false, 0));
+  makeTexture(scene, 'entero_infected', 17, 17, 2, (p, f) => drawEnterocyte(p, true, f));
+  makeTexture(scene, 'toxinb', 7, 7, 1, orb(['#3a5a14', '#6a9a2a', '#a8d85a', '#e8ffc0'], 2.6, 7));
+  makeTexture(scene, 'flagshot', 6, 6, 1, orb(['#2a4a5a', '#5a8aa0', '#a8d8e8', '#ffffff'], 2.2));
   makeTexture(scene, 'biofilm', 10, 10, 2, drawBiofilm);
   makeTexture(scene, 'melanoma', 48, 48, 2, drawMelanoma);
   makeTexture(scene, 'tumornode', 14, 14, 2, drawTumorNode);
@@ -513,7 +684,8 @@ export function generateTextures(scene) {
   makeTexture(scene, 'icon_heart', 8, 8, 1, drawIconHeart);
   makeTexture(scene, 'icon_armor', 8, 8, 1, drawIconArmor);
   makeTexture(scene, 'icon_atp', 8, 9, 1, drawIconAtp);
-  drawTiles(scene);
+  drawTiles(scene, 'tiles_skin', PAL, 'skin');
+  drawTiles(scene, 'tiles_gut', GUT, 'gut');
 }
 
 export function createAnimations(scene) {
@@ -538,6 +710,13 @@ export function createAnimations(scene) {
   anim('hsv1_idle', 'hsv1', [0, 1], 4);
   anim('kera_infected_idle', 'kera_infected', [0, 1], 4);
   anim('mrsa_idle', 'mrsa', [0, 1], 2);
+  anim('salmonella_swim', 'salmonella', [0, 1], 8);
+  anim('ecoli_idle', 'ecoli', [0, 1], 5);
+  anim('rotavirus_spin', 'rotavirus', [0, 1], 6);
+  anim('giardia_swim', 'giardia', [0, 1], 8);
+  anim('giardiaboss_idle', 'giardiaboss', [0, 1], 6);
+  anim('cdiff_idle', 'cdiff', [0, 1], 3);
+  anim('entero_infected_idle', 'entero_infected', [0, 1], 4);
   anim('biofilm_idle', 'biofilm', [0, 1], 3);
   anim('melanoma_idle', 'melanoma', [0, 1], 2);
   anim('tumornode_idle', 'tumornode', [0, 1], 3);

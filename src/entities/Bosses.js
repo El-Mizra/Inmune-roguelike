@@ -249,3 +249,181 @@ export class MelanomaBoss extends Enemy {
     this.vessels.destroy();
   }
 }
+
+
+// ---------- Giardia gigante: embestida, adhesión con disparos y fisión ----------
+export class GiardiaBoss extends Enemy {
+  constructor(scene, x, y, room) {
+    super(scene, x, y, 'giardiaboss', room);
+    this.body.setImmovable(true);
+    this.state = 'move';
+    this.nextAttack = this.gt + 1600;
+    this.pattern = 0;
+    this.splits = [0.66, 0.33];
+    this.tele = scene.add.graphics().setDepth(4);
+  }
+
+  get enraged() {
+    return this.hp < this.maxHp * 0.5;
+  }
+
+  ai_giardiaboss() {
+    const p = this.scene.player;
+    this.tele.clear();
+    // fisión binaria al perder vida
+    if (this.splits.length && this.hp < this.maxHp * this.splits[0]) {
+      this.splits.shift();
+      for (let i = 0; i < 3; i++) {
+        const a = (i / 3) * Math.PI * 2;
+        this.scene.spawnEnemy('giardia', this.x + Math.cos(a) * 26, this.y + Math.sin(a) * 26, this.room);
+      }
+      this.scene.floatText(this.x, this.y - 30, this.scene.lang === 'es' ? 'Fisión binaria' : 'Binary fission', '#a8cad8');
+      Sfx.split();
+    }
+
+    if (this.state === 'prep') {
+      this.setVelocity(0, 0);
+      this.tele.lineStyle(3, 0xff6b6b, 0.5 + 0.4 * Math.sin(this.gt * 0.03));
+      this.tele.lineBetween(this.x, this.y, this.dashTarget.x, this.dashTarget.y);
+      if (this.gt >= this.stateUntil) {
+        this.state = 'dash';
+        this.stateUntil = this.gt + 750;
+        this.moveToward(this.dashTarget.x, this.dashTarget.y, this.enraged ? 270 : 230);
+      }
+      return;
+    }
+    if (this.state === 'dash') {
+      if (this.gt >= this.stateUntil || this.body.blocked.left || this.body.blocked.right || this.body.blocked.up || this.body.blocked.down) {
+        this.state = 'move';
+        this.setVelocity(0, 0);
+        this.scene.cameras.main.shake(120, 0.004);
+      }
+      return;
+    }
+    if (this.state === 'attached') {
+      this.setVelocity(0, 0);
+      if (this.gt >= this.nextRing) {
+        this.nextRing = this.gt + (this.enraged ? 380 : 480);
+        const n = 10;
+        this.ringOff = (this.ringOff || 0) + 0.25;
+        for (let i = 0; i < n; i++) this.shoot(this.ringOff + (i / n) * Math.PI * 2, 'flagshot', 70);
+        Sfx.enemyShot();
+      }
+      if (this.gt >= this.stateUntil) {
+        this.state = 'move';
+        this.attached = false;
+        this.dmgTakenMult = 1;
+        this.restoreTint();
+      }
+      return;
+    }
+
+    // movimiento en zigzag hacia el jugador; rodea los pilares si se atora
+    if (isStuck(this)) {
+      this.detour = clearPoint(this);
+      this.detourUntil = this.gt + 1300;
+    }
+    if (this.detour && this.gt < this.detourUntil) this.moveToward(this.detour.x, this.detour.y, this.speedNow());
+    else {
+      const a = this.angleToPlayer() + Math.sin(this.gt * 0.004) * 0.8;
+      const sp = this.speedNow();
+      this.setVelocity(Math.cos(a) * sp, Math.sin(a) * sp);
+    }
+
+    if (this.gt >= this.nextAttack) {
+      const kind = ['dash', 'attach', 'dash', 'attach'][this.pattern++ % 4];
+      this.nextAttack = this.gt + (this.enraged ? 2300 : 3000);
+      if (kind === 'dash') {
+        this.state = 'prep';
+        this.stateUntil = this.gt + 650;
+        this.dashTarget = this.scene.clampToRoom(this.room, p.x, p.y);
+      } else {
+        // se pega con su disco adhesivo: casi no recibe daño y dispara en anillos
+        this.state = 'attached';
+        this.attached = true;
+        this.dmgTakenMult = 0.35;
+        this.restoreTint();
+        this.stateUntil = this.gt + 2600;
+        this.nextRing = this.gt + 300;
+        this.scene.floatText(this.x, this.y - 30, this.scene.lang === 'es' ? 'Disco adhesivo' : 'Adhesive disc', '#9fb8ff');
+      }
+    }
+  }
+
+  onDeath() {
+    this.tele.destroy();
+  }
+}
+
+// ---------- C. difficile: toxinas, nubes y esporulación ----------
+export class CDiffBoss extends Enemy {
+  constructor(scene, x, y, room) {
+    super(scene, x, y, 'cdiff', room);
+    this.body.setImmovable(true);
+    this.nextAttack = this.gt + 1800;
+    this.pattern = 0;
+    this.spore = false;
+  }
+
+  get enraged() {
+    return this.hp < this.maxHp * 0.5;
+  }
+
+  setForm(spore) {
+    this.spore = spore;
+    this.setTexture(spore ? 'cdiff_spore' : 'cdiff', 0);
+    if (spore) this.anims.stop();
+    else this.play('cdiff_idle');
+    const r = this.def.radius;
+    this.body.setCircle(r, this.width / 2 - r, this.height / 2 - r);
+    this.dmgTakenMult = spore ? 0 : 1;
+  }
+
+  ai_cdiff() {
+    const p = this.scene.player;
+    if (this.spore) {
+      this.setVelocity(0, 0);
+      if (this.gt >= this.sporeUntil) {
+        this.setForm(false);
+        this.scene.floatText(this.x, this.y - 30, this.scene.lang === 'es' ? 'Germina' : 'Germinates', '#c0a8f0');
+      }
+      return;
+    }
+    if (isStuck(this)) {
+      this.detour = clearPoint(this);
+      this.detourUntil = this.gt + 1300;
+    }
+    if (this.detour && this.gt < this.detourUntil) this.moveToward(this.detour.x, this.detour.y, this.speedNow());
+    else this.moveToward(p.x, p.y, this.speedNow());
+
+    if (this.gt >= this.nextAttack) {
+      const kind = ['burst', 'clouds', 'burst', 'spore'][this.pattern++ % 4];
+      this.nextAttack = this.gt + (this.enraged ? 2000 : 2700);
+      if (kind === 'burst') {
+        // toxinas A y B en anillo
+        const n = this.enraged ? 18 : 14;
+        const off = Math.random();
+        for (let i = 0; i < n; i++) this.shoot(off + (i / n) * Math.PI * 2, 'toxinb', 72);
+        Sfx.enemyShot();
+      } else if (kind === 'clouds') {
+        // nubes de toxina con aviso previo: una sobre el jugador y dos alrededor
+        const spots = [[0, 0], [50, 20], [-45, -30]];
+        for (const [dx, dy] of spots) {
+          const pt = this.scene.clampToRoom(this.room, p.x + dx, p.y + dy);
+          this.scene.spawnHazard(pt.x, pt.y, 26, 4200, { telegraph: 900, color: 0x8ac04a });
+        }
+        this.scene.floatText(this.x, this.y - 30, this.scene.lang === 'es' ? 'Toxinas A y B' : 'Toxins A and B', '#a8d85a');
+      } else {
+        // esporulación: invulnerable un rato, rodeada de pseudomembranas
+        this.setForm(true);
+        this.sporeUntil = this.gt + 3200;
+        for (let i = 0; i < 4; i++) {
+          const a = (i / 4) * Math.PI * 2 + 0.4;
+          const pt = this.scene.clampToRoom(this.room, this.x + Math.cos(a) * 55, this.y + Math.sin(a) * 55);
+          this.scene.spawnHazard(pt.x, pt.y, 22, 3300, { telegraph: 600, color: 0xb0a070 });
+        }
+        this.scene.floatText(this.x, this.y - 30, this.scene.lang === 'es' ? 'Esporulación' : 'Sporulation', '#e0d8b0');
+      }
+    }
+  }
+}

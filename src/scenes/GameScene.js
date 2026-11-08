@@ -3,12 +3,13 @@ import { generateFloor, TILE, SOLID } from '../systems/dungeon.js';
 import { Player } from '../entities/Player.js';
 import { CELLS, CELL_ORDER, isUnlocked } from '../data/cells.js';
 import { Enemy } from '../entities/Enemy.js';
-import { MRSABoss, MelanomaBoss } from '../entities/Bosses.js';
+import { MRSABoss, MelanomaBoss, GiardiaBoss, CDiffBoss } from '../entities/Bosses.js';
+import { ZONES, zoneOf, floorLabel } from '../data/zones.js';
 import { ENEMIES, FLOOR_POOLS, FLOOR_BOSSES, CODEX_PATHOGENS } from '../data/enemies.js';
 import { UPGRADES, UPGRADE_IDS } from '../data/upgrades.js';
 import { Controls } from '../systems/controls.js';
 import { Save, memoryTier } from '../systems/storage.js';
-import { t, lang, N } from '../systems/i18n.js';
+import { t, lang, N, L } from '../systems/i18n.js';
 import { Sfx, Music } from '../systems/sfx.js';
 import { PAL } from '../gfx/sprites.js';
 
@@ -23,6 +24,12 @@ const BURST_COLORS = {
   tumornode: 0x77421f,
   mrsa: 0xefc24a,
   melanoma: 0x3a2016,
+  salmonella: 0xe57a90,
+  ecoli: 0xe59a6a,
+  rotavirus: 0x5ab0a0,
+  giardia: 0xa8cad8,
+  giardiaboss: 0xa8cad8,
+  cdiff: 0x8a6ac0,
 };
 
 // microbios lo bastante pequeños para ser fagocitados
@@ -54,6 +61,9 @@ export class GameScene extends Phaser.Scene {
     this.gt = 0;
     this.lang = lang();
     this.floorIndex = this.run.floor;
+    this.zone = zoneOf(this.floorIndex);
+    this.zoneDef = ZONES[this.zone];
+    this.hazards = [];
     this.hpMult = 1 + this.floorIndex * 0.3;
     this.floor = generateFloor(this.run.seed + this.floorIndex * 7919, this.floorIndex);
     this.currentRoom = this.floor.start;
@@ -70,7 +80,7 @@ export class GameScene extends Phaser.Scene {
 
     // --- mapa ---
     const map = this.make.tilemap({ data: this.floor.tiles, tileWidth: TILE, tileHeight: TILE });
-    const ts = map.addTilesetImage('tiles', 'tiles', TILE, TILE, 1, 2);
+    const ts = map.addTilesetImage('tiles', `tiles_${this.zoneDef.id}`, TILE, TILE, 1, 2);
     this.layer = map.createLayer(0, ts, 0, 0);
     this.layer.setCollision(SOLID);
     this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
@@ -173,7 +183,7 @@ export class GameScene extends Phaser.Scene {
     if (!this.scene.isActive('UI')) this.scene.launch('UI');
     else this.scene.get('UI').events.emit('floorchanged');
     this.time.delayedCall(250, () => {
-      this.events.emit('banner', `${t('zone')} 1-${this.floorIndex + 1}`, t('zone1'));
+      this.events.emit('banner', `${t('zone')} ${floorLabel(this.floorIndex)}`, L(this.zoneDef.name));
       if (this.tut) this.time.delayedCall(2400, () => this.setTutStep(0));
       else if (this.floorIndex === 0) this.events.emit('hint', Save.isTouch ? t('controlsTouch') : t('controlsPc'));
     });
@@ -208,6 +218,7 @@ export class GameScene extends Phaser.Scene {
     for (const b of this.enemyBullets.getChildren()) if (b.active && this.gt >= b.dieAt) this.killBullet(b, false);
 
     this.updateNets();
+    this.updateHazards();
     this.updatePickups(dt);
     this.drawShadows();
     this.updateRooms();
@@ -429,6 +440,41 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  // Zonas peligrosas en el suelo (toxina Shiga, toxinas de C. difficile...).
+  // Con `telegraph`, primero se muestra un aviso y luego empiezan a dañar.
+  spawnHazard(x, y, r, duration, { telegraph = 0, color = 0x6a9a2a } = {}) {
+    const g = this.add.graphics().setDepth(3);
+    this.hazards.push({ x, y, r, start: this.gt, armAt: this.gt + telegraph, until: this.gt + telegraph + duration, g, color });
+  }
+
+  updateHazards() {
+    const p = this.player;
+    const gt = this.gt;
+    for (const h of this.hazards) {
+      h.g.clear();
+      if (gt >= h.until) {
+        h.done = true;
+        h.g.destroy();
+        continue;
+      }
+      if (gt < h.armAt) {
+        const k = (gt - h.start) / Math.max(1, h.armAt - h.start);
+        h.g.lineStyle(2, h.color, 0.85);
+        h.g.strokeCircle(h.x, h.y, h.r);
+        h.g.fillStyle(h.color, 0.15);
+        h.g.fillCircle(h.x, h.y, h.r * k);
+      } else {
+        const fade = Math.min(1, (h.until - gt) / 500);
+        h.g.fillStyle(h.color, 0.38 * fade);
+        h.g.fillCircle(h.x, h.y, h.r);
+        h.g.lineStyle(1, h.color, 0.8 * fade);
+        h.g.strokeCircle(h.x, h.y, h.r);
+        if (!p.dead && Phaser.Math.Distance.Between(p.x, p.y, h.x, h.y) < h.r) p.hurt(gt, 1);
+      }
+    }
+    this.hazards = this.hazards.filter((h) => !h.done);
+  }
+
   // Célula NK: embestida con sinapsis letal
   startSynapse(dx, dy) {
     const p = this.player;
@@ -590,6 +636,8 @@ export class GameScene extends Phaser.Scene {
     let e;
     if (id === 'mrsa') e = new MRSABoss(this, x, y, room);
     else if (id === 'melanoma') e = new MelanomaBoss(this, x, y, room);
+    else if (id === 'giardiaboss') e = new GiardiaBoss(this, x, y, room);
+    else if (id === 'cdiff') e = new CDiffBoss(this, x, y, room);
     else e = new Enemy(this, x, y, id, room, opts);
     if (CODEX_PATHOGENS.includes(id) && Save.discover(id)) this.events.emit('discover', id);
     return e;
@@ -695,7 +743,12 @@ export class GameScene extends Phaser.Scene {
           prev = this.spawnEnemy(id, pt.x + dirX * i * 6, pt.y, room, { leader: prev });
         }
       }, room);
-    } else if (id === 'hsv1') {
+    } else if (id === 'ecoli') {
+      for (let i = 0; i < 2; i++) {
+        const x = pt.x + (i ? 8 : -8);
+        this.telegraph(x, pt.y, () => this.spawnEnemy(id, x, pt.y, room), room);
+      }
+    } else if (id === 'hsv1' || id === 'rotavirus') {
       this.ensureHostCells(room, 4);
       for (let i = 0; i < def.group; i++) {
         const x = pt.x + (i - 1) * 8;
@@ -712,7 +765,7 @@ export class GameScene extends Phaser.Scene {
     const alive = this.hostCells.filter((c) => c.active && !c.infected && c.room === room).length;
     for (let i = alive; i < n; i++) {
       const pt = this.randomSpawnPoint(room, 40);
-      const c = this.add.image(pt.x, pt.y, 'kera').setDepth(6);
+      const c = this.add.image(pt.x, pt.y, this.zoneDef.host).setDepth(6);
       c.room = room;
       c.infected = false;
       c.shield = this.player.stats.cellShield;
@@ -751,7 +804,7 @@ export class GameScene extends Phaser.Scene {
     const { x, y, room } = cell;
     cell.destroy();
     virion.die(true);
-    this.spawnEnemy('infected', x, y, room);
+    this.spawnEnemy('infected', x, y, room, { virus: virion.id });
   }
 
   // ------------------------------------------------------------------
@@ -878,6 +931,7 @@ export class GameScene extends Phaser.Scene {
 
   onBossRoomCleared(room) {
     Music.play('explore');
+    for (const h of this.hazards) h.until = 0;
     // limpia proyectiles enemigos
     for (const b of this.enemyBullets.getChildren()) if (b.active) this.killBullet(b, false);
     const x = (room.cx + 0.5) * TILE;
@@ -1163,7 +1217,7 @@ export class GameScene extends Phaser.Scene {
         const tx = Phaser.Math.Between(r.x + 2, r.x + r.w - 3);
         const ty = Phaser.Math.Between(r.y + 2, r.y + r.h - 3);
         if (!f.isFloor(tx, ty)) continue;
-        const frame = Phaser.Math.Between(0, 5);
+        const frame = this.zone * 6 + Phaser.Math.Between(0, 5);
         this.add
           .image((tx + 0.5) * TILE, (ty + 0.5) * TILE, 'decor', frame)
           .setDepth(1)

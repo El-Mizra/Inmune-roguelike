@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { t, L, N } from '../systems/i18n.js';
-import { ENEMIES } from '../data/enemies.js';
+import { ENEMIES, FLOOR_BOSSES } from '../data/enemies.js';
+import { floorLabel } from '../data/zones.js';
 import { CELLS } from '../data/cells.js';
 import { MEMORY_TIERS } from '../systems/storage.js';
 import { title, body, button, panel, fadeIn, floatingBackdrop, restartOnResize, COLORS } from '../systems/ui.js';
@@ -37,7 +38,7 @@ export class ResultScene extends Phaser.Scene {
     const ph = H - py - 74;
     panel(this, px, py, pw, ph, { alpha: 0.9 });
     const total = d.kills.reduce((a, k) => a + k.n, 0);
-    body(this, px + 20, py + 12, `${t('time')}: ${fmtTime(d.time)}    ${t('kills')}: ${total}    ${t('floor')}: 1-${Math.min(d.floor + 1, 2)}`, 22, COLORS.text);
+    body(this, px + 20, py + 12, `${t('time')}: ${fmtTime(d.time)}    ${t('kills')}: ${total}    ${t('floor')}: ${floorLabel(Math.min(d.floor, FLOOR_BOSSES.length - 1))}`, 22, COLORS.text);
 
     // eliminados por especie
     const list = d.kills.filter((k) => ENEMIES[k.id] && !ENEMIES[k.id].hidden || k.id === 'infected').sort((a, b) => b.n - a.n);

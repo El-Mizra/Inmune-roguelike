@@ -51,9 +51,10 @@ No hay tests automáticos. Para validar cambios, ejecuta `npm run build` y prueb
 ## Estado actual
 
 - **Células jugables:** neutrófilo (proyectiles + NET), macrófago (cuerpo a cuerpo + activación M1), célula NK (perforina + sinapsis; detecta al melanoma camuflado), linfocito T CD8 (granzimas, aprende durante la partida y tiene expansión clonal con aliados) y linfocito B (anticuerpos que opsonizan (+30% de daño recibido) y neutralizan virus; ráfaga de célula plasmática).
-- **Zona 1, la piel:** 2 pisos.
-  - **Patógenos:** S. aureus, S. pyogenes, P. aeruginosa, Candida y HSV-1.
-  - **Jefes:** MRSA y melanoma.
+- **Zonas** (`src/data/zones.js`; 2 pisos por zona, la partida las recorre en orden; `floorLabel()` da "2-1"):
+  - **Zona 1, la piel:** S. aureus, S. pyogenes, P. aeruginosa, Candida y HSV-1. Jefes: MRSA y melanoma.
+  - **Zona 2, el intestino** (tileset `tiles_gut`, anfitriones `entero`): Salmonella (se esconde en células), E. coli O157:H7 (charcos de toxina Shiga con `spawnHazard`), rotavirus (infecta como el herpes) y Giardia (se adhiere y se blinda). Jefes: Giardia gigante (embiste, se adhiere y dispara en anillo, se divide) y C. difficile (toxinas, nubes y espora invulnerable).
+  - Para añadir una zona: entrada en `ZONES`, tileset y decoración en `sprites.js` (decoración: 6 marcos por zona), 2 entradas en `FLOOR_POOLS` y 2 jefes en `FLOOR_BOSSES`.
 - **Sistemas:** 15 mejoras, enciclopedia y memoria inmunológica entre partidas.
 - **Desbloqueo de células** (`unlock` en `cells.js`, `isUnlocked()`):
   - Neutrófilo: libre desde el principio.
@@ -80,5 +81,5 @@ La hoja de ruta completa está en `docs/ROADMAP.md`.
 
 1. Eosinófilo (parásitos, zona intestino).
 2. Más arte: sprites hechos a mano (ya hay música procedural en `sfx.js`, objeto `Music`).
-3. Zona 2, el pulmón: *S. pneumoniae*, influenza y *Aspergillus*; como jefes, tuberculosis (granuloma) y cáncer de pulmón.
+3. Zona 3, el sistema nervioso (difícil): meningococo, *Cryptococcus*, toxoplasma; jefes: rabia y glioblastoma. Después: tienda (moneda: proteínas), ayudantes y jefe secreto lupus (autoinmunidad).
 4. Empaquetado con Capacitor para Android y publicación (itch.io o GitHub Pages).

@@ -14,6 +14,7 @@ const CATEGORY_KEY = {
   host: 'host',
   boss: 'boss',
   cancer: 'cancer',
+  protozoan: 'protozoan',
 };
 
 // Enciclopedia: aprende sobre lo que has encontrado.

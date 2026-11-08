@@ -12,6 +12,12 @@ const ANIMS = {
   tumornode: 'tumornode_idle',
   mrsa: 'mrsa_idle',
   melanoma: 'melanoma_idle',
+  salmonella: 'salmonella_swim',
+  ecoli: 'ecoli_idle',
+  rotavirus: 'rotavirus_spin',
+  giardia: 'giardia_swim',
+  giardiaboss: 'giardiaboss_idle',
+  cdiff: 'cdiff_idle',
 };
 
 // Enemigo genérico. El comportamiento específico de cada especie está en
@@ -106,7 +112,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   restoreTint() {
-    if (this.gt < (this.opsonizedUntil || 0)) this.setTint(0xfff0a0);
+    if (this.attached) this.setTint(0x9fb8ff);
+    else if (this.gt < (this.opsonizedUntil || 0)) this.setTint(0xfff0a0);
     else this.clearTint();
   }
 
@@ -268,22 +275,112 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   // ---------- Queratinocito infectado: estalla liberando viriones ----------
-  init_infected() {
-    this.burstAt = this.gt + ENEMIES.hsv1.infect.burstAfter;
+  init_infected(opts) {
+    // virus que la infectó (herpes en la piel, rotavirus en el intestino)
+    this.virus = opts.virus || 'hsv1';
+    this.burstAt = this.gt + ENEMIES[this.virus].infect.burstAfter;
     this.body.setImmovable(true);
+    const tex = this.scene.zoneDef.hostInfected;
+    if (tex !== 'kera_infected') {
+      this.setTexture(tex, 0);
+      this.play(`${tex}_idle`);
+    }
   }
   ai_infected() {
     this.setVelocity(0, 0);
     const left = this.burstAt - this.gt;
     if (left < 1200) this.setScale(1 + Math.sin(this.gt * 0.03) * 0.08);
     if (left <= 0) {
-      const n = ENEMIES.hsv1.infect.virions;
+      const n = ENEMIES[this.virus].infect.virions;
       for (let i = 0; i < n; i++) {
         const a = (i / n) * Math.PI * 2;
-        this.scene.spawnEnemy('hsv1', this.x + Math.cos(a) * 8, this.y + Math.sin(a) * 8, this.room);
+        this.scene.spawnEnemy(this.virus, this.x + Math.cos(a) * 8, this.y + Math.sin(a) * 8, this.room);
       }
       this.scene.burstFx(this.x, this.y, 0xc56b9c);
       this.die(true);
+    }
+  }
+
+  // ---------- Salmonella: se esconde dentro de las células ----------
+  init_salmonella() {
+    this.hideAt = this.gt + 2500 + Math.random() * 2000;
+    this.hiddenUntil = 0;
+  }
+  ai_salmonella() {
+    const p = this.scene.player;
+    if (this.hiddenUntil) {
+      this.setVelocity(0, 0);
+      if (this.gt >= this.hiddenUntil) {
+        // reaparece cerca del jugador
+        const a = Math.random() * Math.PI * 2;
+        const pt = this.scene.clampToRoom(this.room, p.x + Math.cos(a) * 70, p.y + Math.sin(a) * 70);
+        this.body.enable = true;
+        this.body.reset(pt.x, pt.y);
+        this.setAlpha(1);
+        this.stealth = false;
+        this.hiddenUntil = 0;
+        this.hideAt = this.gt + 3200 + Math.random() * 2000;
+        this.scene.puff(this.x, this.y, 0xe57a90);
+      }
+      return;
+    }
+    const a = this.angleToPlayer() + Math.sin(this.gt * 0.005 + this.phase) * 0.6;
+    const s = this.speedNow();
+    this.setVelocity(Math.cos(a) * s, Math.sin(a) * s);
+    this.rotation = a;
+    if (this.gt >= this.hideAt) {
+      // invasión: entra en una célula y desaparece un momento
+      this.hiddenUntil = this.gt + 1700;
+      this.body.enable = false;
+      this.setAlpha(0.2);
+      this.stealth = true;
+      this.scene.puff(this.x, this.y, 0xe57a90);
+    }
+  }
+
+  // ---------- E. coli O157:H7: charcos de toxina Shiga ----------
+  init_ecoli() {
+    this.nextPuddle = this.gt + 1200 + Math.random() * 1500;
+  }
+  ai_ecoli() {
+    const a = this.angleToPlayer() + Math.sin(this.gt * 0.003 + this.phase) * 1.0;
+    const s = this.speedNow();
+    this.setVelocity(Math.cos(a) * s, Math.sin(a) * s);
+    if (this.gt >= this.nextPuddle) {
+      this.nextPuddle = this.gt + 2800;
+      this.scene.spawnHazard(this.x, this.y, 16, 3500, { color: 0x6a9a2a });
+    }
+  }
+
+  // ---------- Rotavirus: infecta enterocitos (misma lógica que el herpes) ----------
+  ai_rotavirus(dt) {
+    this.ai_hsv1(dt);
+  }
+
+  // ---------- Giardia: se adhiere con su disco (blindada) y luego se suelta ----------
+  init_giardia() {
+    this.attached = false;
+    this.nextSwitch = this.gt + 1800 + Math.random() * 1500;
+  }
+  ai_giardia() {
+    if (this.attached) {
+      this.setVelocity(0, 0);
+      if (this.gt >= this.nextSwitch) {
+        this.attached = false;
+        this.dmgTakenMult = 1;
+        this.restoreTint();
+        this.nextSwitch = this.gt + 2400 + Math.random() * 1500;
+      }
+      return;
+    }
+    const a = this.angleToPlayer() + Math.sin(this.gt * 0.008 + this.phase) * 0.9;
+    const s = this.speedNow();
+    this.setVelocity(Math.cos(a) * s, Math.sin(a) * s);
+    if (this.gt >= this.nextSwitch) {
+      this.attached = true;
+      this.dmgTakenMult = 0.35;
+      this.restoreTint();
+      this.nextSwitch = this.gt + 2200;
     }
   }
 

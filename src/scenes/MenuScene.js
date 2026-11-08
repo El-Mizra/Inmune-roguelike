@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { t } from '../systems/i18n.js';
 import { Save, canPersist } from '../systems/storage.js';
+import { floorLabel } from '../data/zones.js';
 import { Sfx, Music } from '../systems/sfx.js';
 import { title, body, button, floatingBackdrop, fadeIn, restartOnResize, COLORS } from '../systems/ui.js';
 
@@ -34,7 +35,7 @@ export class MenuScene extends Phaser.Scene {
     const saved = Save.loadRun();
     let yb = by;
     if (saved) {
-      button(this, W / 2, yb, 280, 44, `${t('continueRun')} · ${t('floor')} 1-${saved.floor + 1}`, () => this.go('Game', { run: saved }), { size: 10, selected: true });
+      button(this, W / 2, yb, 280, 44, `${t('continueRun')} · ${t('floor')} ${floorLabel(saved.floor)}`, () => this.go('Game', { run: saved }), { size: 10, selected: true });
       yb += 50;
     }
     button(this, W / 2, yb, 280, saved ? 40 : 46, saved ? t('newRun') : t('play'), () => this.go('CellSelect'), { size: saved ? 11 : 14 });

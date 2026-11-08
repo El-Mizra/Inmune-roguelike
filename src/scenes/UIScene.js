@@ -3,6 +3,7 @@ import { Controls } from '../systems/controls.js';
 import { Save } from '../systems/storage.js';
 import { t, L, N } from '../systems/i18n.js';
 import { ENEMIES } from '../data/enemies.js';
+import { floorLabel } from '../data/zones.js';
 import { FONT_TITLE, FONT_BODY, COLORS, drawPanel } from '../systems/ui.js';
 import { Sfx } from '../systems/sfx.js';
 
@@ -286,7 +287,7 @@ export class UIScene extends Phaser.Scene {
     g.fillRect(x, 58, Math.round((136 * p.atp) / s.maxAtp), 2);
     this.atpText.setText(`${Math.floor(p.atp)}`);
     this.atpText.setPosition(x + 142, 60);
-    this.floorText.setText(`${t('floor')} 1-${this.gs.floorIndex + 1}`);
+    this.floorText.setText(`${t('floor')} ${floorLabel(this.gs.floorIndex)}`);
 
     // indicador de habilidad (teclado)
     const gt = this.gs.gt;
