@@ -32,6 +32,21 @@ function defaults() {
 
 let data = load();
 
+// ¿Se puede guardar de forma permanente? Al abrir el archivo desde un gestor de
+// archivos en Android (content://) el navegador no conserva los datos.
+const storageWorks = (() => {
+  try {
+    const k = 'inmune.test';
+    localStorage.setItem(k, '1');
+    const ok = localStorage.getItem(k) === '1';
+    localStorage.removeItem(k);
+    return ok;
+  } catch {
+    return false;
+  }
+})();
+export const canPersist = storageWorks && typeof location !== 'undefined' && location.protocol !== 'content:';
+
 function load() {
   const base = defaults();
   try {

@@ -15,9 +15,21 @@ import { DebugScene } from './scenes/DebugScene.js';
 import { StickPlaceScene } from './scenes/StickPlaceScene.js';
 import { Save } from './systems/storage.js';
 
-// Resolución base 960×540; el modo EXPAND amplía el lienzo para llenar
-// pantallas más anchas (móviles 19.5:9) sin bandas negras.
+// Tamaño del juego elegido para que cada píxel del juego ocupe un número ENTERO
+// de píxeles físicos de la pantalla (k). Si el navegador estira el lienzo en
+// proporciones no enteras, el escenario "tiembla" al moverse la cámara.
+// La altura queda cerca de 540 píxeles de juego en cualquier pantalla.
+function pixelPerfectSize() {
+  const el = document.getElementById('game');
+  const dpr = window.devicePixelRatio || 1;
+  const w = el.clientWidth || window.innerWidth;
+  const h = el.clientHeight || window.innerHeight;
+  const k = Math.max(1, Math.round((h * dpr) / 540));
+  return { width: Math.round((w * dpr) / k), height: Math.round((h * dpr) / k) };
+}
+
 function startGame() {
+  const size = pixelPerfectSize();
   const game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: 'game',
@@ -29,8 +41,8 @@ function startGame() {
       autoCenter: Phaser.Scale.CENTER_BOTH,
       // tamaño entero del lienzo: evita costuras entre baldosas al escalar
       autoRound: true,
-      width: 960,
-      height: 540,
+      width: size.width,
+      height: size.height,
     },
     physics: {
       default: 'arcade',
@@ -45,10 +57,19 @@ function startGame() {
 
   // En celular, el navegador sale de pantalla completa al cambiar de app.
   // Cualquier toque al volver la reactiva (tiene que ser dentro de un gesto del usuario).
-  // iPhone/iPad: tras girar la pantalla o abrir desde el ícono, recalcula el tamaño
-  const refreshSize = () => setTimeout(() => game.scale.refresh(), 300);
-  window.addEventListener('orientationchange', refreshSize);
-  window.visualViewport?.addEventListener('resize', refreshSize);
+  // al girar, entrar en pantalla completa o cambiar la ventana, recalcula el tamaño
+  let refitTimer = null;
+  const refit = () => {
+    clearTimeout(refitTimer);
+    refitTimer = setTimeout(() => {
+      const s = pixelPerfectSize();
+      if (s.width !== game.scale.width || s.height !== game.scale.height) game.scale.setGameSize(s.width, s.height);
+      else game.scale.refresh();
+    }, 200);
+  };
+  window.addEventListener('resize', refit);
+  window.addEventListener('orientationchange', refit);
+  window.visualViewport?.addEventListener('resize', refit);
 
   let fullscreenBlockedUntil = 0;
   game.scale.on('fullscreenfailed', () => {

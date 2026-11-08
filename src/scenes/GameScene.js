@@ -118,8 +118,11 @@ export class GameScene extends Phaser.Scene {
     // --- cámara ---
     const cam = this.cameras.main;
     cam.setBackgroundColor(PAL.void);
-    // en celular, más zoom para que las células se aprecien mejor
-    cam.setZoom(Save.isTouch ? 2.5 : 2);
+    // zoom ENTERO (sin temblor); en celular, más cerca para apreciar mejor las células
+    const fitZoom = () => cam.setZoom(Math.max(2, Math.round(this.scale.height / (Save.isTouch ? 195 : 240))));
+    fitZoom();
+    this.scale.on('resize', fitZoom);
+    this.events.once('shutdown', () => this.scale.off('resize', fitZoom));
     cam.setRoundPixels(true);
     cam.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     // seguimiento directo (sin suavizado): evita el temblor por redondeo de píxeles

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { t } from '../systems/i18n.js';
-import { Save } from '../systems/storage.js';
+import { Save, canPersist } from '../systems/storage.js';
 import { Sfx, Music } from '../systems/sfx.js';
 import { title, body, button, floatingBackdrop, fadeIn, restartOnResize, COLORS } from '../systems/ui.js';
 
@@ -50,6 +50,9 @@ export class MenuScene extends Phaser.Scene {
     langBtn(W - 96, 'es', 'ES');
     langBtn(W - 38, 'en', 'EN');
 
+    if (!canPersist) {
+      body(this, W / 2, H - 58, t('noSaveWarning'), 20, COLORS.gold, { align: 'center', wordWrap: { width: W - 60 } }).setOrigin(0.5, 1);
+    }
     const st = Save.stats;
     body(this, 14, H - 30, `${t('stats')}: ${st.runs}  ·  ${t('wins')}: ${st.wins}`, 20, COLORS.textDim);
     body(this, W - 14, H - 30, 'v0.1 · prototipo', 20, COLORS.textDim).setOrigin(1, 0);

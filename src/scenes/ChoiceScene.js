@@ -4,6 +4,7 @@ import { UPGRADES } from '../data/upgrades.js';
 import { title, body, drawPanel, COLORS } from '../systems/ui.js';
 import { Controls } from '../systems/controls.js';
 import { Sfx } from '../systems/sfx.js';
+import { Save } from '../systems/storage.js';
 
 // Elección de mejora (1 de 3). Cada carta explica la molécula real.
 export class ChoiceScene extends Phaser.Scene {
@@ -43,25 +44,48 @@ export class ChoiceScene extends Phaser.Scene {
       return { id, i, c, g, h: fact.y + fact.height + 18 };
     });
     const ch = Math.min(maxH, Math.max(...cards.map((k) => k.h)));
+    // en pantallas táctiles: primer toque marca la carta, segundo toque confirma
+    this.selected = null;
+    this.readyAt = this.game.loop.time + 550;
+    this.redraws = [];
+    this.hint = body(this, W / 2, y0 + ch + 14, '', 22, COLORS.gold).setOrigin(0.5, 0);
     for (const { id, i, c, g } of cards) {
       const draw = (hover) => {
         g.clear();
-        drawPanel(g, 0, 0, cw, ch, { fill: hover ? 0x3d1829 : COLORS.panel, border: hover ? COLORS.accent : COLORS.border });
+        const sel = this.selected === id;
+        drawPanel(g, 0, 0, cw, ch, {
+          fill: sel ? 0x5a2236 : hover ? 0x3d1829 : COLORS.panel,
+          border: sel || hover ? COLORS.accent : COLORS.border,
+        });
       };
       draw(false);
+      this.redraws.push(draw);
       const z = this.add.zone(0, 0, cw, ch).setOrigin(0).setInteractive({ useHandCursor: true });
       c.add(z);
       z.on('pointerover', () => draw(true));
       z.on('pointerout', () => draw(false));
-      z.on('pointerup', () => this.pick(id));
+      z.on('pointerup', (p) => this.pick(id, p));
       c.setAlpha(0);
       c.y = y0 + 20;
       this.tweens.add({ targets: c, alpha: 1, y: y0, duration: 250, delay: i * 90 });
     }
   }
 
-  pick(id) {
-    if (this.picked) return;
+  pick(id, pointer) {
+    if (this.picked || this.game.loop.time < this.readyAt) return;
+    // en pantallas táctiles: primer toque marca, segundo toque (un instante después) confirma.
+    // El "clic" que el celular simula justo tras el toque no cuenta como segundo toque.
+    if (Save.isTouch || pointer?.wasTouch) {
+      if (this.selected !== id) {
+        this.selected = id;
+        this.selectedAt = this.game.loop.time;
+        this.redraws.forEach((d) => d(false));
+        this.hint.setText(t('tapAgain'));
+        Sfx.ui();
+        return;
+      }
+      if (this.game.loop.time - this.selectedAt < 300) return;
+    }
     this.picked = true;
     Sfx.pickup();
     Controls.reset();
