@@ -54,7 +54,7 @@ No hay tests automáticos. Para validar cambios, ejecuta `npm run build` y prueb
 - **Zona 1, la piel:** 2 pisos.
   - **Patógenos:** S. aureus, S. pyogenes, P. aeruginosa, Candida y HSV-1.
   - **Jefes:** MRSA y melanoma.
-- **Sistemas:** 14 mejoras, enciclopedia y memoria inmunológica entre partidas.
+- **Sistemas:** 15 mejoras, enciclopedia y memoria inmunológica entre partidas.
 - **Desbloqueo de células** (`unlock` en `cells.js`, `isUnlocked()`):
   - Neutrófilo: libre desde el principio.
   - Macrófago: completar 1 partida.
@@ -67,6 +67,9 @@ No hay tests automáticos. Para validar cambios, ejecuta `npm run build` y prueb
   - `t()` usa la variante `<clave>_simple` si existe.
   - Tutorial de 4 pasos en la primera partida (`setTutStep`/`updateTutorial` en `GameScene`, panel en `UIScene`; se guarda con `Save.tutorialDone`).
   - Las cartas de mejora muestran primero el efecto.
+- **Estructura de piso:** la sala del jefe está sellada hasta limpiar todas las demás (`lockBossRoom`/`checkBossUnlock`). Las mejoras se eligen al recoger una vesícula en el centro de la sala de mejora y tras el jefe (`spawnVesicle`).
+- **Guardado:** la partida se guarda al empezar cada piso (`Save.saveRun`) y se retoma desde el menú con "Continuar".
+- **15 mejoras**, incluida *Degranulación masiva* (disparo triple; `stats.multishot`).
 - **Controles táctiles:** joystick fijo o flotante y tamaño normal o grande (Ajustes).
 - **Build para celular:** `npm run build:single` genera `dist-single/index.html`, el juego completo en un solo archivo.
 - **Arte:** sombras, decoración de la dermis (`decor`), partículas ambientales, viñeta, anillo de lisis y pseudópodo al moverse.

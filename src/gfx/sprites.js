@@ -497,6 +497,18 @@ export function generateTextures(scene) {
   makeTexture(scene, 'spawn', 14, 14, 4, drawSpawn);
   makeTexture(scene, 'door', 16, 16, 2, drawDoor);
   makeTexture(scene, 'portal', 24, 24, 4, drawPortal);
+  // pedestal con una vesícula de citocinas flotando (se recoge para elegir mejora)
+  makeTexture(scene, 'vesicle', 20, 26, 2, (p, f) => {
+    p.rect(4, 20, 12, 5, PAL.wallFace);
+    p.rect(3, 19, 14, 2, PAL.wallTop);
+    p.rect(6, 17, 8, 2, PAL.wallTop2);
+    const y = f ? 8 : 9;
+    p.blob(10, y, 6, ['#a0368f', '#e070c0', '#ffd0ea', '#ffffff']);
+    p.set(8, y - 1, '#ffd166');
+    p.set(12, y + 2, '#ffd166');
+    p.set(11, y - 3, '#ffd166');
+    p.outline(PAL.outline);
+  });
   makeTexture(scene, 'pixel', 2, 2, 1, drawPixel);
   makeTexture(scene, 'icon_heart', 8, 8, 1, drawIconHeart);
   makeTexture(scene, 'icon_armor', 8, 8, 1, drawIconArmor);
@@ -533,4 +545,5 @@ export function createAnimations(scene) {
   anim('heal_idle', 'heal', [0, 1], 3);
   anim('spawn_blink', 'spawn', [0, 1, 2, 3], 10);
   anim('portal_spin', 'portal', [0, 1, 2, 3], 8);
+  anim('vesicle_float', 'vesicle', [0, 1], 2);
 }

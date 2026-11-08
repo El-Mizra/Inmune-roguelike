@@ -36,6 +36,18 @@ export const UPGRADES = {
       s.pierce += 1;
     },
   },
+  degranulation: {
+    only: 'projectile',
+    name: { es: 'Degranulación masiva', en: 'Mass degranulation' },
+    effect: { es: 'Disparo triple en abanico', en: 'Triple shot in a fan' },
+    fact: {
+      es: 'Una célula muy activada vacía muchos gránulos a la vez (degranulación) y alcanza a más microbios a su alrededor.',
+      en: 'A highly activated cell empties many granules at once (degranulation), reaching more microbes around it.',
+    },
+    apply: (s) => {
+      s.multishot += 2;
+    },
+  },
   lysozyme: {
     name: { es: 'Lisozima', en: 'Lysozyme' },
     effect: { es: '+40% daño contra bacterias Gram +', en: '+40% damage vs Gram + bacteria' },

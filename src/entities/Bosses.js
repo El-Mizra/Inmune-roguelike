@@ -3,6 +3,30 @@ import { Enemy } from './Enemy.js';
 import { Sfx } from '../systems/sfx.js';
 import { t } from '../systems/i18n.js';
 
+// Punto libre de la sala, lejos de pilares, para jefes grandes.
+function clearPoint(boss, margin = 4) {
+  const r = boss.room;
+  const f = boss.scene.floor;
+  for (let i = 0; i < 40; i++) {
+    const tx = Math.floor(r.x + margin + Math.random() * (r.w - margin * 2));
+    const ty = Math.floor(r.y + margin + Math.random() * (r.h - margin * 2));
+    let ok = true;
+    for (let oy = -2; oy <= 2 && ok; oy++) for (let ox = -2; ox <= 2 && ok; ox++) if (!f.isFloor(tx + ox, ty + oy)) ok = false;
+    if (ok) return new Phaser.Math.Vector2((tx + 0.5) * 16, (ty + 0.5) * 16);
+  }
+  return new Phaser.Math.Vector2((r.cx + 0.5) * 16, (r.cy + 0.5) * 16);
+}
+
+// Detecta si el jefe lleva un rato sin avanzar (atorado contra un pilar).
+function isStuck(boss) {
+  const gt = boss.gt;
+  if (gt < (boss.nextStuckProbe || 0)) return false;
+  boss.nextStuckProbe = gt + 800;
+  const last = boss.lastProbe;
+  boss.lastProbe = { x: boss.x, y: boss.y };
+  return !!last && Phaser.Math.Distance.Between(last.x, last.y, boss.x, boss.y) < 6;
+}
+
 // ---------- MRSA: biopelícula, toxinas y leucocidina ----------
 export class MRSABoss extends Enemy {
   constructor(scene, x, y, room) {
@@ -49,8 +73,13 @@ export class MRSABoss extends Enemy {
     if (!this.shards.length && !this.shieldBrokenAt) this.shieldBrokenAt = this.gt;
     if (this.shards.length) this.shieldBrokenAt = 0;
 
-    // avance lento
-    this.moveToward(p.x, p.y, this.speedNow());
+    // avance lento; si se atora en un pilar, rodea por otro punto un momento
+    if (isStuck(this)) {
+      this.detour = clearPoint(this);
+      this.detourUntil = this.gt + 1500;
+    }
+    if (this.detour && this.gt < this.detourUntil) this.moveToward(this.detour.x, this.detour.y, this.speedNow());
+    else this.moveToward(p.x, p.y, this.speedNow());
 
     // leucocidina PVL: círculo de aviso y luego daño
     if (this.pvl) {
@@ -128,18 +157,13 @@ export class MelanomaBoss extends Enemy {
   }
 
   pickWaypoint() {
-    const r = this.room;
-    const T = 16;
-    this.waypoint = new Phaser.Math.Vector2(
-      (r.x + 4 + Math.random() * (r.w - 8)) * T,
-      (r.y + 4 + Math.random() * (r.h - 8)) * T,
-    );
+    this.waypoint = clearPoint(this);
   }
 
   ai_melanoma(dt) {
     this.nodes = this.nodes.filter((n) => n.active);
     // movimiento entre puntos
-    if (Phaser.Math.Distance.Between(this.x, this.y, this.waypoint.x, this.waypoint.y) < 8) this.pickWaypoint();
+    if (Phaser.Math.Distance.Between(this.x, this.y, this.waypoint.x, this.waypoint.y) < 8 || isStuck(this)) this.pickWaypoint();
     this.moveToward(this.waypoint.x, this.waypoint.y, this.speedNow());
 
     // angiogénesis: los nódulos alimentan al tumor

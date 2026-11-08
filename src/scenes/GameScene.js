@@ -87,6 +87,8 @@ export class GameScene extends Phaser.Scene {
     this.player = new Player(this, (s.cx + 0.5) * TILE, (s.cy + 0.5) * TILE, this.run);
     s.visited = true;
     s.cleared = true;
+    // guardado al empezar el piso: si se sale, se retoma desde aquí
+    Save.saveRun(this.run);
     // tutorial en la primera partida (se puede saltar)
     this.tut = this.floorIndex === 0 && !Save.tutorialDone ? { step: -1, x: this.player.x, y: this.player.y } : null;
     for (const id of s.links) this.floor.rooms[id].known = true;
@@ -116,13 +118,16 @@ export class GameScene extends Phaser.Scene {
     // --- cámara ---
     const cam = this.cameras.main;
     cam.setBackgroundColor(PAL.void);
-    cam.setZoom(2);
+    // en celular, más zoom para que las células se aprecien mejor
+    cam.setZoom(Save.isTouch ? 2.5 : 2);
     cam.setRoundPixels(true);
     cam.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-    cam.startFollow(this.player, true, 0.3, 0.3);
+    // seguimiento directo (sin suavizado): evita el temblor por redondeo de píxeles
+    cam.startFollow(this.player, true, 1, 1);
     cam.fadeIn(400, 18, 6, 12);
 
     this.applySpeed();
+    this.lockBossRoom();
     this.aimG = this.add.graphics().setDepth(20);
     this.shadowG = this.add.graphics().setDepth(2);
     this.podG = this.add.graphics().setDepth(9);
@@ -204,6 +209,7 @@ export class GameScene extends Phaser.Scene {
     this.drawShadows();
     this.updateRooms();
     this.updateTutorial();
+    this.bossLockHint();
   }
 
   handleInput() {
@@ -221,9 +227,7 @@ export class GameScene extends Phaser.Scene {
     if (this.gt < p.dashUntil) p.setVelocity(p.dashVX, p.dashVY);
     if (len > 0.1) {
       this.lastMove.set(mx, my).normalize();
-      const w = Math.sin(this.gt * 0.02) * 0.06;
-      p.setScale(1 + w, 1 - w);
-    } else p.setScale(1);
+    }
 
     // --- apuntado ---
     const mode = Save.settings.aim;
@@ -777,7 +781,8 @@ export class GameScene extends Phaser.Scene {
     else if (room.type === 'treasure' && !room.claimed) {
       room.claimed = true;
       room.cleared = true;
-      this.time.delayedCall(300, () => this.offerUpgrades());
+      this.spawnVesicle((room.cx + 0.5) * TILE, (room.cy + 0.5) * TILE);
+      this.checkBossUnlock();
     } else room.cleared = true;
   }
 
@@ -852,6 +857,7 @@ export class GameScene extends Phaser.Scene {
     room.cleared = true;
     this.activeRoom = null;
     this.openDoors(room);
+    this.checkBossUnlock();
     Sfx.clear();
     const p = this.player;
     this.events.emit('toast', t('roomCleared'));
@@ -884,6 +890,57 @@ export class GameScene extends Phaser.Scene {
         used = true;
         this.nextFloor();
       });
+      this.spawnVesicle(x, y + 40);
+    });
+  }
+
+  // La sala del jefe permanece sellada hasta que se limpian todas las demás.
+  lockBossRoom() {
+    const b = this.floor.boss;
+    b.locked = true;
+    b.doorSprites = b.doors.map((d) => this.doors.create((d.x + 0.5) * TILE, (d.y + 0.5) * TILE, 'door', 0).setDepth(4).setTint(0x9a7ad8));
+  }
+
+  checkBossUnlock() {
+    const b = this.floor.boss;
+    if (!b.locked) return;
+    if (this.floor.rooms.some((r) => r !== b && !r.cleared)) return;
+    b.locked = false;
+    this.openDoors(b);
+    this.events.emit('toast', t('bossOpen'));
+    Sfx.boss();
+  }
+
+  // Aviso al acercarse a la puerta sellada del jefe
+  bossLockHint() {
+    const b = this.floor.boss;
+    if (!b.locked || this.gt < (this.nextLockHint || 0)) return;
+    const p = this.player;
+    for (const d of b.doors) {
+      if (Phaser.Math.Distance.Between(p.x, p.y, (d.x + 0.5) * TILE, (d.y + 0.5) * TILE) < 40) {
+        this.nextLockHint = this.gt + 3500;
+        this.floatText(p.x, p.y - 16, t('bossLocked'), '#c9a0ff', 1800);
+        return;
+      }
+    }
+  }
+
+  // Vesícula de citocinas: al tocarla se elige una mejora
+  spawnVesicle(x, y) {
+    const v = this.physics.add.sprite(x, y, 'vesicle', 0).setDepth(6).play('vesicle_float');
+    v.body.setCircle(8, 2, 6);
+    v.body.setImmovable(true);
+    this.tweens.add({ targets: v, scale: { from: 0, to: 1 }, duration: 300, ease: 'Back.easeOut' });
+    const glow = this.add.circle(x, y - 4, 12, 0xff8fb0, 0.25).setDepth(5);
+    this.tweens.add({ targets: glow, scale: 1.5, alpha: 0, duration: 900, repeat: -1 });
+    this.floatText(x, y - 24, t('pedestalHint'), '#ffd0ea', 2500);
+    let taken = false;
+    this.physics.add.overlap(this.player, v, () => {
+      if (taken || this.ending) return;
+      taken = true;
+      glow.destroy();
+      this.burstFx(v.x, v.y - 6, 0xff8fb0, 14);
+      v.destroy();
       this.offerUpgrades();
     });
   }
@@ -1036,6 +1093,10 @@ export class GameScene extends Phaser.Scene {
       this.clearRoom(r);
     }
     const b = this.floor.boss;
+    if (b.locked) {
+      b.locked = false;
+      this.openDoors(b);
+    }
     this.player.body.reset((b.cx + 0.5) * TILE, (b.cy + 4.5) * TILE);
   }
 
@@ -1070,6 +1131,7 @@ export class GameScene extends Phaser.Scene {
 
   finishRun(won) {
     Music.stop();
+    Save.clearRun();
     const lockedBefore = CELL_ORDER.filter((id) => CELLS[id].playable && !isUnlocked(id));
     const summary = Object.entries(this.run.kills).map(([id, n]) => {
       const before = memoryTier(id);
@@ -1115,23 +1177,6 @@ export class GameScene extends Phaser.Scene {
     g.fillStyle(0x000000, 0.28);
     const p = this.player;
     if (p.active && !p.dead) g.fillEllipse(p.x, p.y + 7, 13, 4);
-    // movimiento ameboide: el borde frontal (lamelipodio) se estira hacia donde avanza
-    const pg = this.podG;
-    pg.clear();
-    const v = p.body.velocity;
-    const sp = Math.hypot(v.x, v.y);
-    if (p.active && !p.dead && sp > 10) {
-      const dx = v.x / sp;
-      const dy = v.y / sp;
-      const pulse = 0.6 + 0.4 * Math.sin(this.gt * 0.018);
-      const r = (p.cell.bodyRadius || 5) + 1;
-      pg.fillStyle(0x1a0710, p.alpha);
-      pg.fillCircle(p.x + dx * r * pulse, p.y + dy * r * pulse, r * 0.55 + 1);
-      pg.fillStyle(p.cell.podColor || 0xdcb4c8, p.alpha);
-      pg.fillCircle(p.x + dx * r * pulse, p.y + dy * r * pulse, r * 0.55);
-      pg.fillStyle(0x1a0710, 0.5 * p.alpha);
-      pg.fillCircle(p.x - dx * r * 0.9, p.y - dy * r * 0.9 + 1, 1.5);
-    }
     for (const e of this.enemies.getChildren()) {
       if (!e.active || e.alpha < 0.5) continue;
       const w = Math.max(6, e.radius * 2.2);

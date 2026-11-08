@@ -11,6 +11,7 @@ export function buildStats(cellId, upgradeIds) {
   const s = {
     ...cell.stats,
     pierce: 0,
+    multishot: 0,
     bonus: { bacteria: 0, gramPos: 0, gramNeg: 0, fungus: 0, virus: 0, biofilm: 0, cancer: 0, infected: 0 },
     fissionMult: 1,
     enemySlow: 1,
@@ -131,6 +132,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       pierce: this.stats.pierce,
       life: (this.stats.range / this.stats.bulletSpeed) * 1000,
     });
+    // disparos extra en abanico (mejora "Degranulación masiva"), con algo menos de daño
+    for (let k = 1; k <= this.stats.multishot; k++) {
+      const off = 0.2 * Math.ceil(k / 2) * (k % 2 ? 1 : -1);
+      scene.firePlayerBullet(this.x + ox, this.y + oy, ang + off, {
+        texture: this.cell.weapon.texture || 'granule',
+        opsonize: !!this.cell.weapon.opsonize,
+        neutralize: this.cell.weapon.neutralize,
+        speed: this.stats.bulletSpeed,
+        damage: this.stats.damage * 0.7,
+        pierce: this.stats.pierce,
+        life: (this.stats.range / this.stats.bulletSpeed) * 1000,
+      });
+    }
     Sfx.shoot();
   }
 

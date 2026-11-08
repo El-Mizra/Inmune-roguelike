@@ -30,9 +30,16 @@ export class MenuScene extends Phaser.Scene {
     this.tweens.add({ targets: prey, y: prey.y + 5, x: prey.x + 8, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
 
     const by = H * 0.62;
-    button(this, W / 2, by, 280, 46, t('play'), () => this.go('CellSelect'), { size: 14 });
-    button(this, W / 2, by + 56, 280, 40, t('codex'), () => this.go('Codex', { from: 'Menu' }), { size: 11 });
-    button(this, W / 2, by + 104, 280, 40, t('settings'), () => this.go('Settings', { from: 'Menu' }), { size: 11 });
+    // si hay una partida guardada, se puede retomar desde el inicio de su piso
+    const saved = Save.loadRun();
+    let yb = by;
+    if (saved) {
+      button(this, W / 2, yb, 280, 44, `${t('continueRun')} · ${t('floor')} 1-${saved.floor + 1}`, () => this.go('Game', { run: saved }), { size: 10, selected: true });
+      yb += 50;
+    }
+    button(this, W / 2, yb, 280, saved ? 40 : 46, saved ? t('newRun') : t('play'), () => this.go('CellSelect'), { size: saved ? 11 : 14 });
+    button(this, W / 2, yb + (saved ? 48 : 56), 280, 40, t('codex'), () => this.go('Codex', { from: 'Menu' }), { size: 11 });
+    button(this, W / 2, yb + (saved ? 96 : 104), 280, 40, t('settings'), () => this.go('Settings', { from: 'Menu' }), { size: 11 });
 
     // idioma rápido
     const langBtn = (x, code, label) =>

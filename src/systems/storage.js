@@ -24,6 +24,8 @@ function defaults() {
     kills: {}, // id de especie -> muertes acumuladas entre partidas
     runs: 0,
     tutorialDone: false,
+    // partida en curso guardada al empezar cada piso (como Soul Knight)
+    savedRun: null,
     wins: 0,
   };
 }
@@ -93,6 +95,17 @@ export const Save = {
     const settings = data.settings;
     data = defaults();
     data.settings = settings;
+    save();
+  },
+  saveRun(run) {
+    data.savedRun = JSON.parse(JSON.stringify(run));
+    save();
+  },
+  loadRun() {
+    return data.savedRun ? JSON.parse(JSON.stringify(data.savedRun)) : null;
+  },
+  clearRun() {
+    data.savedRun = null;
     save();
   },
   get tutorialDone() {
