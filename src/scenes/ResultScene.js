@@ -50,29 +50,35 @@ export class ResultScene extends Phaser.Scene {
       body(this, x + 32, y, `${N(def)} ×${k.n}`, 22, COLORS.text);
     });
 
-    // memoria inmunológica ganada
+    // memoria inmunológica (columna izquierda) y células desbloqueadas (derecha)
+    const unlocked = d.unlocked || [];
     const gains = d.kills.filter((k) => k.after > k.before);
-    let y = py + 50 + Math.ceil(Math.min(list.length, 8) / 2) * 34 + 10;
+    const top = py + 50 + Math.ceil(Math.min(list.length, 8) / 2) * 34 + 10;
+    const memW = unlocked.length ? colW - 10 : pw - 40;
+    let y = top;
     body(this, px + 20, y, `${t('memoryGain')}:`, 22, COLORS.green);
     y += 28;
-    if (!gains.length) {
-      body(this, px + 20, y, '—', 20, COLORS.textDim);
-    }
+    if (!gains.length) body(this, px + 20, y, '—', 20, COLORS.textDim);
     for (const g of gains.slice(0, 4)) {
       const bonus = Math.round(MEMORY_TIERS[g.after - 1].bonus * 100);
-      body(this, px + 20, y, `${N(ENEMIES[g.id])}: ${t('tier')} ${g.after} (+${bonus}% ${t('dmgVs')})`, 20, COLORS.green);
-      y += 24;
+      const line = body(this, px + 20, y, `${N(ENEMIES[g.id])}: ${t('tier')} ${g.after} (+${bonus}%)`, 20, COLORS.green, { wordWrap: { width: memW } });
+      y += line.height + 4;
     }
 
-    // células desbloqueadas en esta partida
-    (d.unlocked || []).forEach((id, i) => {
-      const c = CELLS[id];
-      const y = H - 104 - i * 34;
-      const spr = this.add.sprite(px + 34, y, c.texture, 0).setScale(2);
-      spr.play(`${c.texture}_idle`);
-      const txt = body(this, px + 58, y - 13, `${t('newCell')}: ${L(c.name)}`, 26, COLORS.gold);
-      this.tweens.add({ targets: [spr, txt], alpha: { from: 0.4, to: 1 }, duration: 500, yoyo: true, repeat: -1 });
-    });
+    if (unlocked.length) {
+      const ux = px + 20 + colW;
+      let uy = top;
+      body(this, ux, uy, t('newCell'), 22, COLORS.gold);
+      uy += 30;
+      unlocked.forEach((id) => {
+        const c = CELLS[id];
+        const spr = this.add.sprite(ux + 12, uy + 11, c.texture, 0).setScale(1.6);
+        spr.play(`${c.texture}_idle`);
+        const txt = body(this, ux + 32, uy, L(c.name), 22, COLORS.gold);
+        this.tweens.add({ targets: [spr, txt], alpha: { from: 0.5, to: 1 }, duration: 500, yoyo: true, repeat: -1 });
+        uy += 28;
+      });
+    }
 
     button(this, W / 2 - 150, H - 36, 240, 44, t('toMenu'), () => this.scene.start('Menu'), { size: 10 });
     button(this, W / 2 + 150, H - 36, 240, 44, t('playAgain'), () => this.scene.start('CellSelect'), { size: 10 });

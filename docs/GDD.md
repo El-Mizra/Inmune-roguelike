@@ -144,6 +144,15 @@ Cada carta muestra el efecto y un dato real.
 
 Ideas de mecánicas por zona: el moco del pulmón que ralentiza, la microbiota "amiga" a la que no debes dañar en el intestino, el flujo sanguíneo que te arrastra, o el VIH que convierte aliados en enemigos.
 
+### Ideas propuestas por el equipo (pendientes de revisión)
+| Zona | Dificultad | Enemigos / jefe | Ideas de mecánica |
+|---|---|---|---|
+| Sistema digestivo | Intermedia | *Giardia lamblia* (parásito con flagelos y disco adhesivo) | Se pega a las paredes intestinales y hay que despegarlo; diarrea como corriente que arrastra; microbiota amiga que no se debe dañar |
+| Sistema nervioso | Difícil | Jefe: virus de la rabia | Viaja por los nervios (pasillos largos y estrechos); barrera hematoencefálica: pocas células pueden entrar; si no se vence a tiempo, "llega al cerebro" |
+| Sistema circulatorio | Por definir | Jefe: lupus (autoinmunidad) | Tus propios anticuerpos y células se vuelven contra ti: enemigos con el aspecto de las células jugables; idea de "tolerancia": dañar células sanas cuesta vida |
+
+La autoinmunidad es una idea especialmente buena: es la única zona donde el enemigo es el propio sistema inmune y enseña por qué el cuerpo necesita tolerancia.
+
 ## 9. Técnica
 
 - **Motor:** Phaser 3 + Vite, en JavaScript con módulos ES.

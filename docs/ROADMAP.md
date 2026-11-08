@@ -13,6 +13,7 @@ Objetivo: un juego estilo *Soul Knight* que se juegue igual de bien en **celular
 - [ ] **Zona 3, el intestino:** *Salmonella*, *C. difficile* y helmintos; **eosinófilo** como célula nueva. Mecánica de zona: la microbiota amiga no se debe dañar.
 - [ ] **Zona 4, la sangre:** el flujo arrastra; sepsis y leucemia.
 - [ ] **Zona 5, el ganglio linfático:** VIH (convierte aliados en enemigos) y linfoma.
+- [ ] Ideas del equipo para revisar: **sistema digestivo** (*Giardia*, dificultad intermedia), **sistema nervioso** (jefe: rabia, difícil) y **sistema circulatorio** (jefe: lupus y autoinmunidad, donde tus propias células te atacan). Detalle en `GDD.md`.
 - [ ] **Armas intercambiables** dentro de la partida (como en Soul Knight): distintos gránulos, anticuerpos IgM o IgA, etc.
 - [ ] **Sala de tienda** con "antígenos" como moneda y **eventos especiales** (vacuna, fiebre, antibiótico).
 

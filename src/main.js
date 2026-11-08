@@ -12,6 +12,7 @@ import { PauseScene } from './scenes/PauseScene.js';
 import { ChoiceScene } from './scenes/ChoiceScene.js';
 import { ResultScene } from './scenes/ResultScene.js';
 import { DebugScene } from './scenes/DebugScene.js';
+import { StickPlaceScene } from './scenes/StickPlaceScene.js';
 import { Save } from './systems/storage.js';
 
 // Resolución base 960×540; el modo EXPAND amplía el lienzo para llenar
@@ -38,12 +39,17 @@ function startGame() {
     input: { activePointers: 4 },
     // El orden define qué escena se dibuja encima: las capas (pausa, ajustes,
     // enciclopedia, elección) van después del juego y del HUD.
-    scene: [BootScene, MenuScene, CellSelectScene, ResultScene, GameScene, UIScene, PauseScene, SettingsScene, CodexScene, ChoiceScene, DebugScene],
+    scene: [BootScene, MenuScene, CellSelectScene, ResultScene, GameScene, UIScene, PauseScene, SettingsScene, CodexScene, ChoiceScene, DebugScene, StickPlaceScene],
   });
   window.__game = game;
 
   // En celular, el navegador sale de pantalla completa al cambiar de app.
   // Cualquier toque al volver la reactiva (tiene que ser dentro de un gesto del usuario).
+  // iPhone/iPad: tras girar la pantalla o abrir desde el ícono, recalcula el tamaño
+  const refreshSize = () => setTimeout(() => game.scale.refresh(), 300);
+  window.addEventListener('orientationchange', refreshSize);
+  window.visualViewport?.addEventListener('resize', refreshSize);
+
   let fullscreenBlockedUntil = 0;
   game.scale.on('fullscreenfailed', () => {
     fullscreenBlockedUntil = performance.now() + 15000;

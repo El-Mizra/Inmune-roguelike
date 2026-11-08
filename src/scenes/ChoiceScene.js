@@ -26,25 +26,29 @@ export class ChoiceScene extends Phaser.Scene {
 
     const n = this.options.length;
     const cw = Math.min(280, Math.floor((W - 40) / n) - 14);
-    const ch = Math.min(270, H - 150);
+    const maxH = H - 130;
     const total = n * cw + (n - 1) * 14;
     const x0 = W / 2 - total / 2;
     const y0 = 110;
-    this.options.forEach((id, i) => {
+    // primero se crean los textos y luego todas las cartas toman la altura de la más alta
+    const cards = this.options.map((id, i) => {
       const u = UPGRADES[id];
-      const x = x0 + i * (cw + 14);
-      const c = this.add.container(x, y0);
+      const c = this.add.container(x0 + i * (cw + 14), y0);
       const g = this.add.graphics();
+      // lo primero que se lee es qué hace; la molécula y el dato real van debajo
+      const eff = body(this, cw / 2, 16, L(u.effect), 28, COLORS.gold, { align: 'center', wordWrap: { width: cw - 20 } }).setOrigin(0.5, 0);
+      const name = body(this, cw / 2, eff.y + eff.height + 10, L(u.name), 22, COLORS.green, { align: 'center', wordWrap: { width: cw - 20 } }).setOrigin(0.5, 0);
+      const fact = body(this, 14, name.y + name.height + 12, L(u.fact), 22, COLORS.text, { wordWrap: { width: cw - 28 } });
+      c.add([g, eff, name, fact]);
+      return { id, i, c, g, h: fact.y + fact.height + 18 };
+    });
+    const ch = Math.min(maxH, Math.max(...cards.map((k) => k.h)));
+    for (const { id, i, c, g } of cards) {
       const draw = (hover) => {
         g.clear();
         drawPanel(g, 0, 0, cw, ch, { fill: hover ? 0x3d1829 : COLORS.panel, border: hover ? COLORS.accent : COLORS.border });
       };
       draw(false);
-      // lo primero que se lee es qué hace; la molécula y el dato real van debajo
-      const eff = body(this, cw / 2, 16, L(u.effect), 28, COLORS.gold, { align: 'center', wordWrap: { width: cw - 20 } }).setOrigin(0.5, 0);
-      const name = body(this, cw / 2, eff.y + eff.height + 10, L(u.name), 22, COLORS.green, { align: 'center', wordWrap: { width: cw - 20 } }).setOrigin(0.5, 0);
-      const fact = body(this, 14, name.y + name.height + 12, L(u.fact), 18, COLORS.textDim, { wordWrap: { width: cw - 28 } });
-      c.add([g, eff, name, fact]);
       const z = this.add.zone(0, 0, cw, ch).setOrigin(0).setInteractive({ useHandCursor: true });
       c.add(z);
       z.on('pointerover', () => draw(true));
@@ -53,7 +57,7 @@ export class ChoiceScene extends Phaser.Scene {
       c.setAlpha(0);
       c.y = y0 + 20;
       this.tweens.add({ targets: c, alpha: 1, y: y0, duration: 250, delay: i * 90 });
-    });
+    }
   }
 
   pick(id) {

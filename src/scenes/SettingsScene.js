@@ -57,6 +57,10 @@ export class SettingsScene extends Phaser.Scene {
     row(py + 188, t('sound'), [[true, t('on')], [false, t('off')]], s.sound, (v) => Save.setSetting('sound', v));
 
     row(py + 233, t('names'), [['simple', t('names_simple_label')], ['science', t('names_science_label')]], s.names, (v) => Save.setSetting('names', v));
+    button(this, px + pw - 58, py + 278, 96, 36, t('stickAdjust'), () => {
+      Save.setSetting('stickMode', 'fixed');
+      this.scene.start('StickPlace', { from: this.from });
+    }, { size: 8 });
     row(py + 278, t('stick'), [['float', t('stick_float')], ['fixed', t('stick_fixed')]], s.stickMode, (v) => Save.setSetting('stickMode', v));
     row(py + 323, t('stickSize'), [['normal', t('size_normal')], ['large', t('size_large')]], s.stickSize, (v) => Save.setSetting('stickSize', v));
     row(py + 368, t('debugMode'), [[true, t('on')], [false, t('off')]], !!s.debug, (v) => Save.setSetting('debug', v));

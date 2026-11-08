@@ -119,7 +119,7 @@ export class GameScene extends Phaser.Scene {
     cam.setZoom(2);
     cam.setRoundPixels(true);
     cam.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-    cam.startFollow(this.player, true, 0.18, 0.18);
+    cam.startFollow(this.player, true, 0.3, 0.3);
     cam.fadeIn(400, 18, 6, 12);
 
     this.applySpeed();

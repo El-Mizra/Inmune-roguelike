@@ -128,9 +128,18 @@ export class UIScene extends Phaser.Scene {
     // tamaño de los controles táctiles (Ajustes → Tamaño de controles)
     const k = Save.settings.stickSize === 'large' ? 1.4 : 1;
     this.stickSize = Save.settings.stickSize;
+    this.stickPosKey = `${Save.settings.stickX},${Save.settings.stickY}`;
     this.stickR = 50 * k;
     this.knobR = 22 * k;
-    this.stickHome = { x: 70 + this.stickR, y: H - 60 - this.stickR };
+    // posición del joystick fijo: la elegida en Ajustes → Ajustar, o la de fábrica
+    const sxs = Save.settings.stickX;
+    this.stickHome =
+      sxs != null
+        ? {
+            x: Phaser.Math.Clamp(sxs * W, this.stickR + 10, W * 0.45),
+            y: Phaser.Math.Clamp(Save.settings.stickY * H, 150 + this.stickR, H - this.stickR - 10),
+          }
+        : { x: 70 + this.stickR, y: H - 60 - this.stickR };
     const ar = 52 * k;
     const sr = 34 * k;
     this.btnAttack = { x: W - 52 - ar, y: H - 52 - ar, r: ar };
@@ -189,10 +198,12 @@ export class UIScene extends Phaser.Scene {
         dx = p.x - m.bx;
         dy = p.y - m.by;
       }
-      const k = Math.min(1, Math.hypot(dx, dy) / R);
+      const raw = Math.min(1, Math.hypot(dx, dy) / R);
       const a = Math.atan2(dy, dx);
-      Controls.touchMoveX = k > 0.15 ? Math.cos(a) * k : 0;
-      Controls.touchMoveY = k > 0.15 ? Math.sin(a) * k : 0;
+      // zona muerta pequeña y velocidad máxima con el 60% del recorrido
+      const k = raw < 0.1 ? 0 : Math.min(1, (raw - 0.1) / 0.5);
+      Controls.touchMoveX = k ? Math.cos(a) * k : 0;
+      Controls.touchMoveY = k ? Math.sin(a) * k : 0;
     }
     const s = this.touches.aim;
     if (s && s.id === p.id) {
@@ -234,7 +245,7 @@ export class UIScene extends Phaser.Scene {
 
   update(_t, dt) {
     this.syncDebugZone();
-    if (this.stickSize !== Save.settings.stickSize) this.layout();
+    if (this.stickSize !== Save.settings.stickSize || this.stickPosKey !== `${Save.settings.stickX},${Save.settings.stickY}`) this.layout();
     const gs = this.gs;
     if (!gs || !gs.player) return;
     if (!this.gameRunning() && (this.touches.move || this.touches.aim)) {
